@@ -15,7 +15,7 @@ console.log('Starting NexusEMS server...');
 console.log('Environment check:');
 console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Set' : 'Not set');
 console.log('EMAIL_USER:', process.env.EMAIL_USER ? 'Set' : 'Not set');
-console.log('GMAIL_USER:', process.env.GMAIL_USER ? 'Set' : 'Not set');
+console.log('EMAIL_USER:', process.env.EMAIL_USER ? 'Set' : 'Not set');
 
 // Initialize Express app
 const app = express();

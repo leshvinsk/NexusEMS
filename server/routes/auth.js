@@ -327,12 +327,12 @@ router.post('/send-verification', async (req, res) => {
     
     // Create reusable transporter
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
+      host: process.env.EMAIL_HOST || 'smtp.yandex.com',
+      port: process.env.EMAIL_PORT || 465,
+      secure: true,
       auth: {
-        user: process.env.EMAIL_USER,  // Your Gmail address
-        pass: process.env.EMAIL_PASS   // Your Gmail password or app password
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
       }
     });
     
@@ -693,12 +693,12 @@ router.post('/send-contact-verification', async (req, res) => {
     
     // Create reusable transporter
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      secure: true,
       auth: {
-        user: process.env.EMAIL_USER,  // Your Gmail address
-        pass: process.env.EMAIL_PASS   // Your Gmail password or app password
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
       }
     });
     

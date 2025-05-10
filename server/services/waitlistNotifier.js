@@ -81,10 +81,12 @@ class WaitlistNotifier {
       
       // Create a nodemailer transporter
       const transporter = nodemailer.createTransport({
-        service: 'gmail',  // Using the Gmail service preset
+        host: process.env.EMAIL_HOST,
+        port: process.env.EMAIL_PORT,
+        secure: true,
         auth: {
-          user: process.env.GMAIL_USER || 'your-email@gmail.com',
-          pass: process.env.GMAIL_PASS || 'your-app-password'
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS 
         }
       });
       
@@ -163,7 +165,7 @@ class WaitlistNotifier {
     `;
     
     return {
-      from: `"NexusEMS" <${process.env.GMAIL_USER}>`,
+      from: `"NexusEMS" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: emailSubject,
       html: emailHtml

@@ -401,8 +401,8 @@ router.post('/:id/email', async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: 'gmail',  // Using the Gmail service preset
       auth: {
-        user: process.env.GMAIL_USER || 'your-email@gmail.com',
-        pass: process.env.GMAIL_PASS || 'your-app-password'
+        user: process.env.EMAIL_USER || 'your-email@gmail.com',
+        pass: process.env.EMAIL_PASS || 'your-app-password'
       }
     });
     
@@ -410,7 +410,7 @@ router.post('/:id/email', async (req, res) => {
     
     // Prepare email content
     const mailOptions = {
-      from: `"NexusEMS" <${process.env.GMAIL_USER || 'your-email@gmail.com'}>`,
+      from: `"NexusEMS" <${process.env.EMAIL_USER || 'your-email@gmail.com'}>`,
       to: booking.customer_email,
       subject: `Your Ticket for ${booking.event_name}`,
       html: `

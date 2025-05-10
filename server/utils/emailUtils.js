@@ -1,15 +1,14 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-// Create a nodemailer transporter with Gmail configuration
+// Create a nodemailer transporter with Yandex configuration
 const transporter = nodemailer.createTransport({
-  service: 'gmail',  // Using the built-in Gmail service
   host: process.env.EMAIL_HOST,
   port: process.env.EMAIL_PORT,
   secure: true, // use SSL
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS // This should be an app password from Google account
+    pass: process.env.EMAIL_PASS
   },
   tls: {
     // Do not fail on invalid certs
