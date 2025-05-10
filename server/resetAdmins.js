@@ -111,7 +111,6 @@ async function createAdmin(id, username, email, password, contact) {
     });
 
     await admin.save();
-    console.log(`Admin ${username} created successfully`);
   } catch (err) {
     console.error(`Error creating admin ${username}:`, err);
     throw err;

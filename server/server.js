@@ -316,7 +316,6 @@ const initializeAdmins = async () => {
       // Create new admin with mongoose model to trigger the pre-save hook
       const newAdmin = new Admin(admin);
       await newAdmin.save();
-      console.log(`Admin account created: ${admin.username}`);
     }
     
     console.log('Admin accounts created successfully.');
