@@ -36,7 +36,8 @@
   <div class="featured-events">
     <!-- No results message -->
     <div *ngIf="filteredEvents.length === 0" class="no-results">
-      <p>No data found matching.</p>
+      <p *ngIf="searchQuery && searchQuery.trim() !== ''">No Events Found Matching "{{ searchQuery }}"</p>
+      <p *ngIf="!searchQuery || searchQuery.trim() === ''">No Events Currently Available</p>
     </div>
 
     <div class="event-cards" *ngIf="filteredEvents.length > 0">
