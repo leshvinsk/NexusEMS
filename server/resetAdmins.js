@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+const { getAdminData } = require('./utils/adminLoader');
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
@@ -56,38 +57,32 @@ async function resetAdmins() {
     // Create new admin accounts
     console.log('Creating new admin accounts...');
 
+    // Get admin data from environment variables
+    const admins = getAdminData();
+    
+    if (admins.length === 0) {
+      console.log('No admin accounts found in environment variables. Please check your .env file.');
+      return;
+    }
+
     // Process each admin
-    const adminPromises = [
+    const adminPromises = admins.map(admin => 
       createAdmin(
-        process.env.ADMIN1_ID,
-        process.env.ADMIN1_USERNAME,
-        process.env.ADMIN1_EMAIL,
-        process.env.ADMIN1_PASSWORD,
-        process.env.ADMIN1_CONTACT
-      ),
-      createAdmin(
-        process.env.ADMIN2_ID,
-        process.env.ADMIN2_USERNAME,
-        process.env.ADMIN2_EMAIL,
-        process.env.ADMIN2_PASSWORD,
-        process.env.ADMIN2_CONTACT
-      ),
-      createAdmin(
-        process.env.ADMIN3_ID,
-        process.env.ADMIN3_USERNAME,
-        process.env.ADMIN3_EMAIL,
-        process.env.ADMIN3_PASSWORD,
-        process.env.ADMIN3_CONTACT
+        admin.admin_id,
+        admin.username,
+        admin.email,
+        admin.password,
+        admin.contact_no
       )
-    ];
+    );
 
     await Promise.all(adminPromises);
     console.log('All admin accounts created successfully');
 
     // Verify the admins were created
-    const admins = await Admin.find({});
-    console.log(`Found ${admins.length} admins in the database:`);
-    admins.forEach(admin => {
+    const createdAdmins = await Admin.find({});
+    console.log(`Found ${createdAdmins.length} admins in the database:`);
+    createdAdmins.forEach(admin => {
       console.log(`- ${admin.username} (${admin.admin_id})`);
     });
 

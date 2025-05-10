@@ -8,8 +8,7 @@ console.log('Environment check:');
 console.log('PORT:', process.env.PORT);
 console.log('MONGODB_URI:', process.env.MONGODB_URI);
 console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Set' : 'Not set');
-console.log('ADMIN1_USERNAME:', process.env.ADMIN1_USERNAME);
-console.log('ADMIN1_PASSWORD:', process.env.ADMIN1_PASSWORD);
+
 
 // Define a simple Admin schema for testing
 const AdminSchema = new mongoose.Schema({
@@ -53,7 +52,7 @@ async function verifySetup() {
     });
 
     await admin.save();
-    console.log('Test admin created successfully');
+    console.log('Admin Created Successfully');
 
     // Test password comparison
     const foundAdmin = await Admin.findOne({ username: process.env.ADMIN1_USERNAME });
@@ -73,7 +72,7 @@ async function verifySetup() {
     console.error('Error during verification:', error);
   } finally {
     await mongoose.disconnect();
-    console.log('MongoDB disconnected');
+    console.log('MongoDB Disconnected');
   }
 }
 

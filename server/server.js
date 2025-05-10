@@ -9,6 +9,7 @@ const Admin = require('./models/Admin');
 const Event = require('./models/createEvent');
 const Ticket = require('./models/ticket');
 const Discount = require('./models/discount');
+const { getAdminData } = require('./utils/adminLoader');
 
 // Just log minimal server info
 console.log('Starting NexusEMS server...');
@@ -293,52 +294,32 @@ const initializeAdmins = async () => {
     // Count existing admins
     const count = await Admin.countDocuments();
     
-    // If there are already 3 or more admins, don't create default ones
-    if (count >= 3) {
+    // If there are already admins, don't create default ones
+    if (count > 0) {
       console.log('Admin accounts already exist in the database.');
       return;
     }
     
-    console.log('Creating default admin accounts...');
+    console.log('Creating admin accounts...');
     
-    // Create admin accounts from environment variables
-    const adminData = [
-      {
-        admin_id: process.env.ADMIN1_ID,
-        username: process.env.ADMIN1_USERNAME,
-        email: process.env.ADMIN1_EMAIL,
-        password: process.env.ADMIN1_PASSWORD,
-        contact_no: process.env.ADMIN1_CONTACT
-      },
-      {
-        admin_id: process.env.ADMIN2_ID,
-        username: process.env.ADMIN2_USERNAME,
-        email: process.env.ADMIN2_EMAIL,
-        password: process.env.ADMIN2_PASSWORD,
-        contact_no: process.env.ADMIN2_CONTACT
-      },
-      {
-        admin_id: process.env.ADMIN3_ID,
-        username: process.env.ADMIN3_USERNAME,
-        email: process.env.ADMIN3_EMAIL,
-        password: process.env.ADMIN3_PASSWORD,
-        contact_no: process.env.ADMIN3_CONTACT
-      }
-    ];
+    // Get admin data from environment variables
+    const adminData = getAdminData();
+    
+    if (adminData.length === 0) {
+      console.log('No admin accounts found in environment variables. Please check your .env file.');
+      return;
+    }
     
     // Insert admin accounts individually to properly trigger the password hashing
     // middleware in the Admin model
     for (const admin of adminData) {
-      // Check if admin already exists
-      const existingAdmin = await Admin.findOne({ username: admin.username });
-      if (!existingAdmin) {
-        // Create new admin with mongoose model to trigger the pre-save hook
-        const newAdmin = new Admin(admin);
-        await newAdmin.save();
-        console.log(`Admin account created: ${admin.username}`);
-      }
+      // Create new admin with mongoose model to trigger the pre-save hook
+      const newAdmin = new Admin(admin);
+      await newAdmin.save();
+      console.log(`Admin account created: ${admin.username}`);
     }
-    console.log('Default admin accounts created successfully.');
+    
+    console.log('Admin accounts created successfully.');
   } catch (error) {
     console.error('Error initializing admin accounts:', error.message);
   }
