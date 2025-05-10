@@ -1,0 +1,256 @@
+<div class="organizer-container">
+    <div class="organizer-header">
+        <div class="header-left">
+            <h2>Seat Setup</h2>
+        </div>
+        <div class="user-info">
+            <span>{{ currentUser?.username || 'Organizer' }}</span>
+            <i class="fas fa-chevron-right"></i>
+            <button class="logout-btn" (click)="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span *ngIf="!isSidebarCollapsed">Log Out</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" [class.collapsed]="isSidebarCollapsed">
+        <div class="sidebar-menu">
+            <a [routerLink]="['/organizer']" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span *ngIf="!isSidebarCollapsed">Events</span>
+            </a>
+            <a [routerLink]="['/event-analytics']" routerLinkActive="active" class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span *ngIf="!isSidebarCollapsed">Analytics</span>
+            </a>
+            <a [routerLink]="['/waitlist-management']" routerLinkActive="active" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span *ngIf="!isSidebarCollapsed">Waitlist Management</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" [class.expanded]="isSidebarCollapsed">
+        <!-- Notification Messages -->
+        <div class="notification error" *ngIf="showErrorMessage">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{ errorMessage }}</span>
+            <button class="close-btn" (click)="showErrorMessage = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="notification success" *ngIf="showSuccessMessage">
+            <i class="fas fa-check-circle"></i>
+            <span>{{ successMessage }}</span>
+            <button class="close-btn" (click)="showSuccessMessage = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Custom Alert Dialog -->
+        <div class="alert-dialog-overlay" *ngIf="showAlertDialog">
+            <div class="alert-dialog">
+                <h3>{{ alertDialogTitle }}</h3>
+                <p>{{ alertDialogMessage }}</p>
+                <div class="dialog-buttons" [ngClass]="{'single-button': !showCancelButton}">
+                    <button *ngIf="showCancelButton" class="cancel-btn" (click)="onAlertDialogResponse(false)">
+                        <i class="fas fa-times-circle"></i> Cancel
+                    </button>
+                    <button class="confirm-btn" (click)="onAlertDialogResponse(true)">
+                        <i class="fas fa-check-circle"></i> OK
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="seat-selection-container">
+            <!-- Header Section -->
+            <div class="header-section">
+                <h1>Select Your Seats</h1>
+            </div>
+
+            <div class="main-content">
+                <!-- Layout Section Selection -->
+                <div class="layout-selection">
+                    <h2>Select Layout Section</h2>
+                    <div class="layout-options">
+                        <select [(ngModel)]="selectedLayout" (change)="onLayoutChange()">
+                            <option value="">Choose a section</option>
+                            <option *ngFor="let section of layoutSections" [value]="section.id">
+                                {{ section.name }} {{ layoutHasBookedTickets(section.id) ? '(Has Booked Tickets)' : '' }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section Info -->
+                <div class="section-info" *ngIf="selectedLayout">
+                    <div class="section-info-content">
+                        <h3>{{ currentLayoutSection?.name }}</h3>
+                        <p>{{ currentLayoutSection?.description }}</p>
+                    </div>
+                    <div class="total-seats">
+                        <span>Total Available Seats:</span>
+                        <span class="seat-count">{{ totalAvailableSeats }} / 618</span>
+                    </div>
+                </div>
+
+                <!-- Seating Layout and Image Container -->
+                <div class="layout-container">
+                    <!-- Seating Layout -->
+                    <div class="seating-layout" *ngIf="selectedLayout">
+                        <div class="seats-container">
+                            <div class="row-label-container">
+                                <div class="row-label" *ngFor="let row of seatRows | keyvalue">
+                                    {{ row.key }}
+                                </div>
+                            </div>
+
+                            <div class="seats-grid">
+                                <div class="seat-row" 
+                                    *ngFor="let row of seatRows | keyvalue"
+                                    [attr.data-section]="selectedLayout.includes('-left') ? 'left' : 
+                                                        selectedLayout.includes('-right') ? 'right' : 'center'">
+                                    <div
+                                        class="seat"
+                                        *ngFor="let seat of row.value"
+                                        [ngClass]="{
+                                            'seat-booked': seat.status === 'booked'
+                                        }"
+                                        [style.background-color]="getSeatColor(seat)"
+                                        [title]="seat.status === 'booked' ? 'This seat is already booked' : seat.row + seat.number + ' - ' + (seatTypes[seat.type].name || 'Regular') + ' - $' + seat.price"
+                                    >
+                                        {{ seat.number }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Image Container -->
+                    <div class="image-container" *ngIf="selectedLayout">
+                        <img src="assets/images/seating.png" alt="Seating Layout">
+                    </div>
+                </div>
+
+                <!-- Layout Setup -->
+                <div class="layout-setup" *ngIf="selectedLayout">
+                    <h2>Layout Setup</h2>
+                    <div class="setup-content">
+                        <div class="ticket-type-selection">
+                            <div class="ticket-dropdown">
+                                <div *ngIf="isLayoutConfigured(selectedLayout) && !selectedTicketType && showLayoutConfiguredMessage" class="notification info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>This layout section already has a ticket type assigned. You can change it by selecting a different ticket type.</span>
+                                    <button class="close-btn" (click)="showLayoutConfiguredMessage = false">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <select [(ngModel)]="selectedTicketType" (change)="onTicketTypeChange()" [disabled]="isTicketTypeDropdownDisabled()">
+                                    <option value="">Select a ticket type</option>
+                                    <option *ngFor="let type of ticketTypes" [value]="type.id">
+                                        {{ type.name }} - ${{ type.price }}
+                                    </option>
+                                </select>
+                                <div *ngIf="isTicketTypeDropdownDisabled()" class="notification warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span><strong><strong>This layout section ({{ currentLayoutSection?.name }}) has booked tickets.</strong></strong> The ticket type cannot be changed because tickets have already been purchased with the current configuration because tickets have already been purchased with the current configuration.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="color-picker" *ngIf="selectedTicketType">
+                            <label for="seatColor">Color for {{ selectedTicketTypeInfo?.name }} tickets:</label>
+                            <div class="color-picker-container">
+                                <input
+                                    type="color"
+                                    id="seatColor"
+                                    [(ngModel)]="currentTicketTypeColor"
+                                    (change)="updateSeatColor()">
+                                <span class="color-code">{{currentTicketTypeColor}}</span>
+                            </div>
+                            <div class="color-error" *ngIf="colorError">
+                                <i class="fas fa-exclamation-circle"></i> {{colorError}}
+                            </div>
+                        </div>
+
+                        <div class="layout-info" *ngIf="selectedTicketType">
+                            <h3>Layout Information</h3>
+                            <div class="ticket-details">
+                                <div class="detail-row">
+                                    <span>Ticket Type:</span>
+                                    <span>{{ selectedTicketTypeInfo?.name }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span>Price per Seat:</span>
+                                    <span>${{ selectedTicketTypeInfo?.price }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Current Configuration for Selected Section -->
+                        <div class="saved-layouts" *ngIf="isLayoutConfigured(selectedLayout)">
+                            <h3>Current Configuration</h3>
+                            <div class="ticket-details">
+                                <div class="detail-row">
+                                    <span>{{ getLayoutTicketType(selectedLayout) ? getTicketTypeName(getLayoutTicketType(selectedLayout)!) : '' }}</span>
+                                    <span style="display: flex; align-items: center;">
+                                        <span class="color-preview"
+                                              [style.background-color]="getLayoutTicketType(selectedLayout) ? getTicketTypeColor(getLayoutTicketType(selectedLayout)!) : '#808080'">
+                                        </span>
+                                        ${{ getLayoutTicketType(selectedLayout) ? getTicketTypePrice(getLayoutTicketType(selectedLayout)!) : 0 }}
+                                        ({{ getLayoutTicketType(selectedLayout) ? getSeatCount(selectedLayout, getLayoutTicketType(selectedLayout)!) : 0 }} seats)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            class="save-btn"
+                            [disabled]="!selectedTicketType || isTicketTypeDropdownDisabled()"
+                            (click)="saveLayout()"
+                            *ngIf="selectedTicketType"
+                        >
+                            {{ isLayoutConfigured(selectedLayout) ? 'Update Layout Configuration' : 'Save Layout Configuration' }}
+                        </button>
+                    </div>
+
+                    <div class="empty-layout" *ngIf="!selectedTicketType && !isTicketTypeDropdownDisabled()">
+                        <p>Please select a ticket type to continue.</p>
+                    </div>
+                </div>
+
+                <!-- Create Event Button -->
+                <div class="create-event-container">
+                    <button
+                        class="create-event-btn"
+                        [disabled]="!canCreateEvent()"
+                        (click)="createEvent()"
+                    >
+                        Update Event
+                    </button>
+                    <p *ngIf="!canCreateEvent()" class="create-event-hint error-hint">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Please assign a ticket type to at least one layout section before creating the event.
+                    </p>
+                    <p *ngIf="canCreateEvent()" class="create-event-hint">
+                        <i class="fas fa-info-circle"></i>
+                        Any unconfigured layout sections will not be included in the event.
+                    </p>
+                    <div class="configured-layouts-info" *ngIf="savedLayouts.length > 0">
+                        <p>Configured sections: {{ savedLayouts.length }} / {{ layoutSections.length }}</p>
+                        <ul>
+                            <li *ngFor="let layout of savedLayouts">
+                                {{ getSectionName(layout.layout) }}: 
+                                {{ layout.ticketTypeName }} (${{ getTicketTypePrice(layout.ticketType) }})
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

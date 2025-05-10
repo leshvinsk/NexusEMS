@@ -1,0 +1,59 @@
+<div class="waitlist-form-container">
+  <h2 mat-dialog-title>Join Waitlist for {{ data.eventName }}</h2>
+  
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+  
+  <form [formGroup]="waitlistForm" (ngSubmit)="onSubmit()">
+    <mat-dialog-content>
+      <p class="waitlist-description">
+        Join our waitlist to be notified when tickets become available for this event.
+      </p>
+      
+      <div class="form-field">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Full Name</mat-label>
+          <input matInput formControlName="name" placeholder="Enter your full name">
+          <mat-error *ngIf="waitlistForm.get('name')?.hasError('required')">
+            Name is required
+          </mat-error>
+        </mat-form-field>
+      </div>
+      
+      <div class="form-field">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" placeholder="Enter your email" type="email">
+          <mat-error *ngIf="waitlistForm.get('email')?.hasError('required')">
+            Email is required
+          </mat-error>
+          <mat-error *ngIf="waitlistForm.get('email')?.hasError('email')">
+            Please enter a valid email address
+          </mat-error>
+        </mat-form-field>
+      </div>
+      
+      <div class="form-field">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Contact Number</mat-label>
+          <input matInput formControlName="contact" placeholder="Enter your contact number" type="tel">
+          <mat-error *ngIf="waitlistForm.get('contact')?.hasError('required')">
+            Contact number is required
+          </mat-error>
+          <mat-error *ngIf="waitlistForm.get('contact')?.hasError('pattern')">
+            Please enter a valid contact number (10-12 digits)
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </mat-dialog-content>
+    
+    <mat-dialog-actions align="end">
+      <button mat-button type="button" (click)="onCancel()" [disabled]="isSubmitting">Cancel</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="waitlistForm.invalid || isSubmitting">
+        <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+        <span *ngIf="!isSubmitting">Join Waitlist</span>
+      </button>
+    </mat-dialog-actions>
+  </form>
+</div>

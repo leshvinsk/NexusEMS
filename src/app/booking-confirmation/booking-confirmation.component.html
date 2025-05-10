@@ -1,0 +1,80 @@
+
+<!-- Animated confetti elements -->
+<div class="confetti-container">
+  <div class="confetti" *ngFor="let i of confettiCount"></div>
+</div>
+
+<div class="confirmation-container">
+  <!-- Success message with animation -->
+  <div class="confirmation-message">
+    <div class="success-icon">✓</div>
+    <h1>Booking Confirmed!</h1>
+    <p>Your payment was successful.</p>
+    <p>Booking ID: <strong>{{ bookingId }}</strong></p>
+  </div>
+
+  <!-- Loading indicator -->
+  <div class="loading-indicator" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading your booking information...</p>
+  </div>
+
+  <!-- Error message -->
+  <div class="error-message" *ngIf="hasError && !isLoading">
+    <p><i class="fas fa-exclamation-circle"></i> {{ errorMessage }}</p>
+    <p>Please try refreshing the page or contact customer support.</p>
+  </div>
+
+  <!-- Ticket information with enhanced styling -->
+  <div class="ticket-info" *ngIf="!isLoading && !hasError">
+    <div class="brand-logo">
+      <div class="logo">
+        <img src="assets/favicon/favicon.svg" alt="NexusEMS Logo" width="150px" height="150px">
+      </div>
+      <p>NexusEMS</p>
+
+      <!-- Barcode for visual effect -->
+      <div class="barcode">
+        <div class="barcode-lines"></div>
+        <p class="barcode-number">{{ bookingId }}</p>
+      </div>
+    </div>
+    <div class="ticket-details">
+      <h2>{{ eventName }}</h2>
+      <p><i class="fas fa-calendar-alt"></i> Date: {{ eventDate }}</p>
+      <p><i class="fas fa-clock"></i> Time: {{ eventTime }}</p>
+      
+      <!-- Single seat display (for backward compatibility) -->
+      <p *ngIf="seats.length === 0"><i class="fas fa-chair"></i> Seat: Section {{ seatSection }}, Row {{ seatRow }}, Seat {{ seatNumber }}</p>
+      
+      <!-- Multiple seats display -->
+      <div *ngIf="seats.length > 0" class="seats-container">
+        <p><i class="fas fa-chair"></i> Seats:</p>
+        <ul class="seat-list">
+          <li *ngFor="let seat of seats">
+            Section {{ seat.section }}, Row {{ seat.row }}, Seat {{ seat.seat_no }}
+            <span class="seat-type" *ngIf="seat.ticket_type">({{ seat.ticket_type }})</span>
+          </li>
+        </ul>
+      </div>
+      
+      <p><i class="fas fa-user"></i> Attendee: <strong>{{ attendeeName }}</strong></p>
+      <p *ngIf="customerEmail"><i class="fas fa-envelope"></i> Email: {{ customerEmail }}</p>
+    </div>
+  </div>
+
+  <!-- Action buttons in a single row with proper spacing -->
+  <div class="action-buttons">
+    <button class="btn-primary" (click)="downloadPDF()">
+      <i class="fas fa-download"></i> Download PDF
+    </button>
+    <button class="btn-secondary" (click)="emailTicket()">
+      <i class="fas fa-envelope"></i> Email Ticket
+    </button>
+  </div>
+
+  <!-- Close button with enhanced styling -->
+  <button class="close-btn" (click)="goToEvents()">
+    <i class="fas fa-times"></i> Close
+  </button>
+</div>

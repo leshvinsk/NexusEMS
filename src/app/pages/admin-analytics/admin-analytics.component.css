@@ -1,0 +1,1104 @@
+/* Admin Container styles */
+.admin-container {
+    padding-top: 80px; /* Adjust based on header height */
+    display: flex;
+    height: 100vh;
+    background-color: #f8f9fa;
+}
+
+.admin-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.admin-header h1 {
+    margin: 0;
+    color: #333;
+    font-size: 1.5rem;
+}
+
+.admin-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 1.25rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.user-info span {
+    color: #000000;
+    font-weight: 500;
+}
+
+.user-info i {
+    color: #000000;
+    font-size: 0.8rem;
+}
+
+.logout-btn {
+    background-color: #cccccc;
+    border: 1px solid #ffffff;
+    color: #1a73e8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 14px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.logout-btn:hover {
+    background-color: #1a73e8;
+    color: white;
+}
+
+/* Sidebar styles */
+.sidebar {
+    width: 250px;
+    background-color: white;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar.collapsed {
+    width: 60px;
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.sidebar-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #000000;
+    font-weight: 600;
+}
+
+.toggle-btn {
+    display: none;
+}
+
+.sidebar-menu {
+    padding: 1rem 0;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    color: #000000;
+    text-decoration: none;
+    transition: all 0.3s;
+    font-size: 0.9rem;
+}
+
+.menu-item:hover {
+    background-color: #f8f9fa;
+    color: #1a73e8;
+}
+
+.menu-item.active {
+    color: #1a73e8;
+    background-color: #e8f0fe;
+}
+
+.menu-item i {
+    width: 20px;
+    margin-right: 1rem;
+}
+
+/* Main content styles */
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+    padding-top: 0px;
+}
+
+.content {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+/* Page title styling */
+.page-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #333;
+    margin: 20px 0 20px 0;
+}
+
+/* Card styling */
+.card {
+    background-color: white;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.card-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.card-content {
+    padding: 20px;
+}
+
+/* Notification Messages */
+.notification {
+    position: relative;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    animation: fadeIn 0.3s ease-in-out;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.notification i {
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.notification.error-notification {
+    background-color: #ffebee;
+    color: #c62828;
+    border-left: 4px solid #c62828;
+}
+
+.notification.success-notification {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border-left: 4px solid #2e7d32;
+}
+
+.notification .close-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.notification .close-btn:hover {
+    opacity: 1;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Font Awesome Icons */
+.fas {
+    font-size: 1.2rem;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.main-content::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.main-content {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* Analytics Controls */
+.analytics-controls {
+    background-color: white;
+}
+
+/* Filter section */
+.filter-section {
+    margin-bottom: 20px;
+}
+
+.select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.select-wrapper::after {
+    content: '\f107';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #666;
+}
+
+select.form-control {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: white;
+    font-size: 16px;
+    color: #333;
+    cursor: pointer;
+}
+
+select.form-control:focus {
+    border-color: #1a73e8;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.25);
+}
+
+/* Remove the analytic-type-selector styles that are no longer needed */
+.analytic-type-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.analytic-btn {
+    background-color: #e9ecef;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.analytic-btn:hover {
+    background-color: #dee2e6;
+}
+
+.analytic-btn.active {
+    background-color: #1a73e8;
+    color: white;
+}
+
+.time-filter-selector {
+    margin-bottom: 20px;
+}
+
+.filter-label {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #000000;
+}
+
+/* Custom date filter styling */
+.custom-date-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.date-inputs {
+    display: flex;
+    gap: 15px;
+}
+
+.date-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.date-field label {
+    font-size: 14px;
+    color: #000000;
+}
+
+.date-field input {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.apply-date-btn {
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    align-self: flex-start;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.apply-date-btn:hover {
+    background-color: #1557b0;
+}
+
+.apply-date-btn:disabled {
+    background-color: #a5c2e7;
+    cursor: not-allowed;
+}
+
+/* Loading indicator */
+.loading-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 0;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #1a73e8;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Analytics Content */
+.analytics-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Chart Section */
+.chart-section {
+    background-color: white;
+}
+
+.chart-container {
+    width: 100%;
+}
+
+.chart-placeholder {
+    width: 100%;
+    height: 400px;
+}
+
+/* Pie Chart Styles */
+.pie-chart-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 400px;
+    position: relative;
+}
+
+.pie-chart {
+    position: relative;
+    width: 350px;
+    height: 350px;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #f5f5f5; /* Fallback color */
+    border: 3px solid white; /* Add white border around the entire chart */
+    box-sizing: border-box;
+    /* Add subtle inner border to separate segments */
+    background-clip: padding-box;
+}
+
+/* Enhance segments with subtle borders and better contrast */
+@media (min-width: 768px) {
+    .pie-chart {
+        background-blend-mode: soft-light;
+        filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.1));
+    }
+}
+
+/* Center circle to create donut chart */
+.chart-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 150px;
+    height: 150px;
+    background-color: white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1) inset;
+    z-index: 2;
+}
+
+/* Pie segment annotations */
+.pie-annotation {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    transform-origin: center;
+    transform: rotate(var(--segment-angle));
+    z-index: 10;
+}
+
+.annotation-content {
+    position: absolute;
+    width: 150px;
+    top: 20px;  /* Position closer to the outer edge */
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    padding: 8px;
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 8px;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    opacity: 0.7;
+    transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 5;
+}
+
+.pie-annotation:hover .annotation-content {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
+.annotation-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.annotation-value {
+    font-size: 12px;
+    font-weight: 500;
+    color: #555;
+}
+
+.annotation-percentage {
+    font-size: 11px;
+    color: #777;
+}
+
+/* Link between table and chart */
+.annotation-content::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid rgba(255, 255, 255, 0.85);
+}
+
+/* Legend Styles */
+.pie-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.legend-label {
+    flex: 1;
+    font-weight: 500;
+}
+
+.legend-value {
+    font-weight: bold;
+    color: #444;
+}
+
+/* Mock chart - combines pie chart and legend */
+.mock-chart {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    padding: 20px;
+    background-color: white;
+    border-radius: 4px;
+    height: 300px;
+}
+
+@media (max-width: 768px) {
+    .mock-chart {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .pie-chart {
+        margin-bottom: 20px;
+    }
+}
+
+/* Key Metrics styles */
+.key-metrics {
+    background-color: white;
+}
+
+.metrics-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.metric-card {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.metric-icon {
+    background-color: #e3f2fd;
+    color: #1a73e8;
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+}
+
+.metric-icon i {
+    font-size: 24px;
+}
+
+.metric-info {
+    flex: 1;
+}
+
+.metric-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.metric-label {
+    color: #666;
+    font-size: 14px;
+}
+
+/* No data message */
+.no-data-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 0;
+    text-align: center;
+}
+
+.no-data-message i {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 15px;
+}
+
+.retry-btn {
+    margin-top: 15px;
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.retry-btn:hover {
+    background-color: #1557b0;
+}
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+    .metrics-cards {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        height: 100vh;
+        z-index: 1000;
+        transform: translateX(0);
+    }
+
+    .sidebar.collapsed {
+        transform: translateX(-100%);
+    }
+
+    .toggle-btn {
+        display: block;
+        position: absolute;
+        right: -40px;
+        top: 1rem;
+        background: white;
+        border: none;
+        padding: 0.5rem;
+        border-radius: 0 4px 4px 0;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+    
+    .date-inputs {
+        flex-direction: column;
+    }
+
+    .metrics-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Generate Report section */
+.generate-report-section {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 15px; /* Add gap between buttons */
+    flex-wrap: wrap; /* Allow buttons to wrap on small screens */
+}
+
+.generate-report-btn {
+    padding: 12px 24px;
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.generate-report-btn:hover:not(:disabled) {
+    background-color: #0d5bcd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.generate-report-btn:disabled {
+    background-color: #c1c1c1;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.generate-report-btn i {
+    font-size: 16px;
+}
+
+/* Download PDF Button Styles */
+.download-pdf-btn {
+    padding: 12px 24px;
+    background-color: #d94235;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.download-pdf-btn:hover {
+    background-color: #c1261a;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.download-pdf-btn:disabled {
+    background-color: #e99690;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.download-pdf-btn i {
+    font-size: 16px;
+}
+
+/* Test Buttons Container */
+.test-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* Test Connection Button */
+.test-connection-btn {
+    padding: 8px 16px;
+    background-color: #4a6fdc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.test-connection-btn:hover {
+    background-color: #3a5bbe;
+}
+
+/* Diagnostic Button */
+.diagnostic-btn {
+    padding: 8px 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.diagnostic-btn:hover {
+    background-color: #218838;
+}
+
+.test-connection-btn i,
+.diagnostic-btn i {
+    margin-right: 8px;
+}
+
+/* Center circle content */
+.center-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 10px;
+}
+
+.total-count {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.total-label {
+    font-size: 12px;
+    color: #666;
+}
+
+.annotation-count {
+    font-size: 12px;
+    font-weight: bold;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 12px;
+    padding: 2px 6px;
+    display: inline-block;
+}
+
+/* Analytics Table Styles */
+.table-section {
+    margin-top: 25px;
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.analytics-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.analytics-table thead {
+    background-color: #f5f7fa;
+}
+
+.analytics-table th,
+.analytics-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e1e5eb;
+    white-space: nowrap;
+}
+
+/* Ensure date columns have enough width */
+.analytics-table th:nth-child(2),
+.analytics-table th:nth-child(3) {
+    min-width: 180px;
+}
+
+/* Event name can wrap if needed */
+.analytics-table td:first-child {
+    white-space: normal;
+    word-break: break-word;
+    max-width: 300px;
+}
+
+.analytics-table th {
+    font-weight: 600;
+    color: #333;
+}
+
+.analytics-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.analytics-table tfoot {
+    font-weight: 600;
+    background-color: #f5f7fa;
+}
+
+/* Responsive table adjustments */
+@media (max-width: 768px) {
+    .analytics-table {
+        font-size: 12px;
+    }
+    
+    .analytics-table th,
+    .analytics-table td {
+        padding: 8px 10px;
+    }
+    
+    /* Handle smaller screens with horizontal scroll */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Layout adjustments for showing both chart and table */
+@media (min-width: 1200px) {
+    .analytics-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+    }
+    
+    .chart-section,
+    .table-section {
+        margin-top: 0;
+    }
+}
+
+/* Color indicator for table legend */
+.color-indicator {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    margin: 0 auto;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Ensure proper alignment of the color indicator column */
+.analytics-table th:first-child,
+.analytics-table td:first-child {
+    width: 30px;
+    padding: 8px;
+    text-align: center;
+    vertical-align: middle;
+    background-color: rgba(0, 0, 0, 0.01); /* Very light background to highlight the color column */
+}
+
+/* Add a hover effect that highlights both the row and makes the color indicator larger */
+.analytics-table tbody tr:hover .color-indicator {
+    transform: scale(1.3);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+/* Legend highlighting and interaction */
+.analytics-table tr.highlight {
+    background-color: rgba(26, 115, 232, 0.1);
+}
+
+.analytics-table tr.highlight .color-indicator {
+    transform: scale(1.3);
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+.pie-annotation.highlight .annotation-content {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.1);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    background-color: rgba(255, 255, 255, 0.95);
+    z-index: 20;
+}
+
+/* Add transition for smooth highlight effect */
+.analytics-table tr {
+    transition: background-color 0.3s ease;
+}
+
+.analytics-table .color-indicator {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Progress Pie Chart for Utilization */
+.progress-pie-chart {
+    position: relative;
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #f5f5f5; /* Fallback color */
+    border: 3px solid white;
+    box-sizing: border-box;
+    margin: 0 auto;
+}
+
+/* Utilization Summary Styles */
+.utilization-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f5f7fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e1e5eb;
+}
+
+.summary-label {
+    font-weight: 600;
+    color: #333;
+}
+
+.summary-value {
+    font-weight: 500;
+    color: #1a73e8;
+}
+
+/* PDF Export Optimization */
+.pdf-capture-mode {
+    background-color: white !important;
+}
+
+.pdf-capture-mode .pie-chart {
+    background-image: none !important; /* Remove CSS gradients for PDF capture */
+}
+
+.pdf-capture-mode .card {
+    box-shadow: none !important; /* Remove shadows for cleaner PDF */
+}
+
+.pdf-capture-mode .color-indicator {
+    width: 20px !important;
+    height: 20px !important;
+    border: 1px solid #333 !important;
+}
+
+.pdf-optimized .pie-chart {
+    background-color: transparent !important;
+}
+
+/* PDF explicit segments */
+.pdf-explicit-segments {
+    z-index: 5;
+}
+
+.pdf-segment {
+    z-index: 6;
+} 

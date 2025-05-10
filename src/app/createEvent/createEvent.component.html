@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create Event</title>
+</head>
+<body>
+  <div class="app-container">
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <img src="logo.jpg" alt="NexusEMS logo" />
+    </div>
+    <div>
+      <h2>Create Event</h2>
+    </div>
+    <div class="header-actions">
+      <button class="create-event-button">Create Event</button>
+      <button class="profile-button">Profile</button>
+    </div>
+  </header>
+
+  <div class="main-container">
+    
+      <!-- Left Navigation -->
+    <nav class="sidebar">
+      <ul class="nav-list">
+        <li>Create Event</li>
+        <li>Tickets</li>
+        <li>Attendees</li>
+        <li>Analytics</li>
+        <li>Settings</li>
+      </ul>
+    </nav>
+  
+    <form class="content" #createEventForm="ngForm" (ngSubmit)="onSubmit(createEventForm)">
+      <div class="inputcontainer">
+          <div class="form-container">
+            <h2>Basic Information</h2>
+              <div class="form-group">
+                <label for="eventName">Event Name:</label>
+                <input type="text" id="eventName" name="eventName" class="form-control" ngModel required>
+                <div *ngIf="createEventForm.submitted && !createEventForm.controls['eventName']?.valid" class="error">
+                  [required]
+                </div>
+              </div>
+        
+              <div class="form-group">
+                <label for="eventDescription">Event Description:</label>
+                <textarea id="eventDescription" name="eventDescription" class="form-control" rows="3" ngModel required></textarea>
+                <div *ngIf="createEventForm.submitted && !createEventForm.controls['eventDescription']?.valid" class="error">
+                  [required]
+                </div>
+              </div>
+          </div>
+  
+          <div class="form-container">
+            <h2>Date & Time</h2>
+              <div class="form-group">
+                <label for="eventDate">Date:</label>
+                <input type="date" id="eventDate" name="eventDate" class="form-control" [min]="today" ngModel required>
+                <div *ngIf="createEventForm.submitted && !createEventForm.controls['eventDate']?.valid" class="error">
+                  [required]
+                </div>
+              </div>
+  
+            <div class="time-inputs-container">
+                <div class="form-group">
+                    <label for="startTime">Start Time:</label>
+                    <input type="time" id="startTime" name="startTime" class="form-control" ngModel required>
+                    <div *ngIf="createEventForm.submitted && !createEventForm.controls['startTime']?.valid" class="error">
+                      [required]
+                    </div>
+                </div>
+  
+                <div class="form-group">
+                    <label for="endTime">End Time:</label>
+                    <input type="time" id="endTime" name="endTime" class="form-control" ngModel required>
+                    <div *ngIf="createEventForm.submitted && !createEventForm.controls['endTime']?.valid" class="error">
+                      [required]
+                    </div>
+                </div>
+            </div>
+              
+        </div>
+   
+      </div>
+  
+      <div class="form-container">
+        <div class="form-group">
+          <h2>File Upload</h2>
+          <input type="file" 
+              id="eventImage" 
+              name="eventImage" 
+              class="form-control"
+              accept="image/*"
+              multiple
+              (change)="onFileSelected($event)">
+        </div>
+  
+        <div class="image-preview-container">
+          <h4>Uploaded Images</h4>
+  
+  
+          <!-- Image Previews -->
+          <div class="image-preview-list">
+            <div class="image-preview-item" *ngFor="let file of selectedFiles">
+              <img [src]="file.url" alt="Event image preview">
+            </div>
+          </div>
+  
+          <div class="empty-state" *ngIf="selectedFiles.length === 0">
+            <p>No images uploaded yet</p>
+            <small>Images will appear here after upload</small>
+          </div>
+  
+        </div>
+  
+      </div>
+  
+        <small class="form-text text-muted">
+          Upload up to 5 images (max 5MB each). Accepted formats: JPG, PNG, GIF
+        </small>
+      
+  
+      <div class="button-container">
+        <button type="submit" class="btn btn-primary">Create Event</button>
+    </div>
+    </form>
+
+    
+
+
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="eventModal" class="modal" [ngClass]="{'show': showModal}">
+  <div class="modal-content">
+    <span class="close" (click)="closeModal()">&times;</span>
+    <h2>Event Created Successfully!</h2>
+    <p><strong>Event Name:</strong> {{ eventName }}</p>
+    <p><strong>Event Date:</strong> {{ eventDate }}</p>
+    <p><strong>Time:</strong> {{ startTime }} -> {{ endTime }}</p>
+  </div>
+</div>
+
+  
+</body>
+</html>

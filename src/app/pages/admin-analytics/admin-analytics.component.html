@@ -1,0 +1,282 @@
+<div class="admin-container">
+    <div class="admin-header">
+        <h2>Auditorium Admin</h2>
+        <div class="user-info">
+            <span>{{ currentUser?.username }}</span>
+            <i class="fas fa-chevron-right"></i>
+            <button class="logout-btn" (click)="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span *ngIf="!isSidebarCollapsed">Log Out</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" [class.collapsed]="isSidebarCollapsed">
+        <div class="sidebar-menu">
+            <a [routerLink]="['/administrator']" routerLinkActive="active" class="menu-item" (click)="router.navigate(['/administrator'])">
+                <i class="fas fa-users"></i>
+                <span *ngIf="!isSidebarCollapsed">Organizers</span>
+            </a>
+            <a [routerLink]="['/admin-analytics']" routerLinkActive="active" class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span *ngIf="!isSidebarCollapsed">Analytics</span>
+            </a>
+            <a [routerLink]="['/admin-settings']" routerLinkActive="active" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span *ngIf="!isSidebarCollapsed">Settings</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" [class.expanded]="isSidebarCollapsed">
+        <div class="content">
+            <!-- Page Title -->
+            <h1 class="page-title">Analytics Dashboard</h1>
+
+            <!-- Error Message -->
+            <div class="notification error-notification" *ngIf="errorMessage">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>{{ errorMessage }}</span>
+                <button class="close-btn" (click)="errorMessage = ''">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Analytics Controls Card -->
+            <div class="card analytics-controls">
+                <div class="card-content">
+                    <div class="filter-section">
+                        <div class="filter-label">Analytics Type:</div>
+                        <div class="select-wrapper">
+                            <select 
+                                [(ngModel)]="selectedAnalytic" 
+                                (change)="changeAnalyticType(selectedAnalytic)"
+                                class="form-control">
+                                <option value="" selected disabled>Please Select Analytics Type</option>
+                                <option value="bookings">Auditorium Bookings</option>
+                                <option value="events">Events Hosted</option>
+                                <option value="utilization">Utilization Statistics</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="time-filter-selector">
+                        <div class="filter-label">Time Period:</div>
+                        <div class="select-wrapper">
+                            <select 
+                                [(ngModel)]="timeFilter" 
+                                (change)="changeTimeFilter(timeFilter)"
+                                class="form-control">
+                                <option value="" selected disabled>Please Select Time Period</option>
+                                <option value="last7days">Weekly (Last 7 Days)</option>
+                                <option value="last30days">Monthly (Last 30 Days)</option>
+                                <option value="custom">Custom Date Range</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Custom Date Range - Only shown when custom is selected -->
+                    <div class="custom-date-filter" *ngIf="timeFilter === 'custom'">
+                        <div class="date-inputs">
+                            <div class="date-field">
+                                <div class="filter-label">Start Date:</div>
+                                <input 
+                                    type="date" 
+                                    id="start-date" 
+                                    [(ngModel)]="customStartDate" 
+                                    [disabled]="isLoading">
+                            </div>
+                            <div class="date-field">
+                                <div class="filter-label">End Date:</div>
+                                <input 
+                                    type="date" 
+                                    id="end-date" 
+                                    [(ngModel)]="customEndDate" 
+                                    [disabled]="isLoading">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Generate Report Button -->
+                    <div class="generate-report-section">
+                        <button 
+                            class="generate-report-btn" 
+                            [disabled]="!selectedAnalytic || !timeFilter || (timeFilter === 'custom' && (!customStartDate || !customEndDate)) || isLoading" 
+                            (click)="generateReport()">
+                            <i class="fas fa-chart-bar"></i> Generate Report
+                        </button>
+                        
+                        <!-- Download as PDF Button - only shown after report is generated -->
+                        <button 
+                            *ngIf="!isLoading && analyticsData && reportGenerated"
+                            class="download-pdf-btn" 
+                            (click)="downloadAsPDF()">
+                            <i class="fas fa-file-pdf"></i> Download as PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div class="loading-indicator" *ngIf="isLoading">
+                <div class="spinner"></div>
+                <p>{{ isPdfLoading ? 'Generating PDF...' : 'Loading analytics data...' }}</p>
+            </div>
+
+            <!-- No Data Message -->
+            <div class="no-data-message" *ngIf="!isLoading && (!analyticsData || !reportGenerated) && errorMessage">
+                <i class="fas fa-chart-area"></i>
+                <p>{{ errorMessage }}</p>
+                <button class="retry-btn" (click)="loadAnalytics()">Retry</button>
+            </div>
+
+            <!-- Analytics Content - Only shown after Generate Report is clicked -->
+            <div class="analytics-content" *ngIf="!isLoading && analyticsData && reportGenerated">
+                <!-- Chart Section -->
+                <div class="card chart-section">
+                    <div class="card-header">
+                        <h2>{{ selectedAnalytic === 'bookings' ? 'Booking Trends' : 
+                               selectedAnalytic === 'events' ? 'Event Type Distribution' : 
+                               'Venue Utilization Rates' }}</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="chart-container">
+                            <!-- Pie chart with annotations for Bookings and Events -->
+                            <div class="pie-chart-container" *ngIf="selectedAnalytic !== 'utilization'">
+                                <div class="pie-chart" [style.background]="getConicGradient()">
+                                    <!-- Center circle for donut style -->
+                                    <div class="chart-center">
+                                        <div class="center-content">
+                                            <div class="total-count">
+                                                {{getTotalCount()}}
+                                            </div>
+                                            <div class="total-label">
+                                                {{selectedAnalytic === 'bookings' ? 'Total Bookings' : 'Total Events'}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Annotations for each segment -->
+                                    <div *ngFor="let label of analyticsData.labels; let i = index" 
+                                        class="pie-annotation"
+                                        [style.--segment-angle]="(i + 0.5) * (360 / analyticsData.labels.length) + 'deg'"
+                                        [id]="'pie-segment-' + i"
+                                        (mouseenter)="highlightSegment(i)" 
+                                        (mouseleave)="unhighlightSegment()">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Progress Pie Chart for Utilization -->
+                            <div class="pie-chart-container" *ngIf="selectedAnalytic === 'utilization'">
+                                <div class="progress-pie-chart" [style.background]="getConicGradient()">
+                                    <!-- Center circle for donut style -->
+                                    <div class="chart-center">
+                                        <div class="center-content">
+                                            <div class="total-count">
+                                                {{analyticsData['utilizationPercentage']}}%
+                                            </div>
+                                            <div class="total-label">
+                                                Utilization
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Utilization stats summary -->
+                                <div class="utilization-summary">
+                                    <div class="summary-item">
+                                        <div class="summary-label">Total Events:</div>
+                                        <div class="summary-value">{{analyticsData['totalEvents']}}</div>
+                                    </div>
+                                    <div class="summary-item">
+                                        <div class="summary-label">Utilization: </div>
+                                        <div class="summary-value">{{analyticsData['utilizationPercentage']}}%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Section -->
+                <div class="card table-section">
+                    <div class="card-header">
+                        <h2>{{ selectedAnalytic === 'bookings' ? 'Auditorium Booking Details' : 
+                               selectedAnalytic === 'events' ? 'Event Details' : 
+                               'Event List' }}</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="table-container">
+                            <!-- Bookings Table - Shows Event Name, Start Date, End Date -->
+                            <table class="analytics-table" *ngIf="selectedAnalytic === 'bookings'">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 30px"></th>
+                                        <th>Event Name</th>
+                                        <th>Start Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let event of events; let i = index"
+                                        [id]="'table-row-' + i"
+                                        (mouseenter)="highlightSegment(i)" 
+                                        (mouseleave)="unhighlightSegment()">
+                                        <td>
+                                            <div class="color-indicator" [style.background-color]="getSliceColor(i)"></div>
+                                        </td>
+                                        <td>{{ event.event_name }}</td>
+                                        <td>{{ formatDateDisplay(event.start_date_time) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <!-- Events Table - Shows Event Name with color indicator -->
+                            <table class="analytics-table" *ngIf="selectedAnalytic === 'events'">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 30px"></th>
+                                        <th>Event Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let label of analyticsData.labels; let i = index"
+                                        [id]="'table-row-' + i"
+                                        (mouseenter)="highlightSegment(i)" 
+                                        (mouseleave)="unhighlightSegment()">
+                                        <td>
+                                            <div class="color-indicator" [style.background-color]="getSliceColor(i)"></div>
+                                        </td>
+                                        <td>{{ label }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <!-- Utilization Table - Shows only Event Names without color indicators -->
+                            <table class="analytics-table" *ngIf="selectedAnalytic === 'utilization'">
+                                <thead>
+                                    <tr>
+                                        <th>Event Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let eventName of analyticsData['eventsList']; let i = index">
+                                        <td>{{ eventName }}</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot *ngIf="analyticsData['eventsList'] && analyticsData['eventsList'].length > 0">
+                                    <tr>
+                                        <th>Total Events: {{ analyticsData['eventsList'].length }}</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div> 

@@ -1,0 +1,154 @@
+<div class="organizer-container">
+  <div class="organizer-header">
+    <div class="header-left">
+      <h2>Waitlist Management</h2>
+    </div>
+    <div class="user-info">
+      <span>{{ currentUser?.username || 'User' }}</span>
+      <i class="fas fa-chevron-right"></i>
+      <button class="logout-btn" (click)="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span *ngIf="!isSidebarCollapsed">Log Out</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar" [class.collapsed]="isSidebarCollapsed">
+    <div class="sidebar-menu">
+      <a [routerLink]="['/organizer']" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item">
+        <i class="fas fa-calendar-alt"></i>
+        <span *ngIf="!isSidebarCollapsed">Events</span>
+      </a>
+      <a [routerLink]="['/event-analytics']" routerLinkActive="active" class="menu-item">
+        <i class="fas fa-chart-line"></i>
+        <span *ngIf="!isSidebarCollapsed">Analytics</span>
+      </a>
+      <a [routerLink]="['/attendee-list']" routerLinkActive="active" class="menu-item">
+        <i class="fas fa-users"></i>
+        <span *ngIf="!isSidebarCollapsed">Attendees</span>
+    </a>
+      <a [routerLink]="['/waitlist-management']" routerLinkActive="active" class="menu-item">
+        <i class="fas fa-list"></i>
+        <span *ngIf="!isSidebarCollapsed">Waitlist Management</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" [class.expanded]="isSidebarCollapsed">
+    <!-- Page Title -->
+    <h1 class="page-title">Waitlist Management Dashboard</h1>
+    
+    <!-- Notification Messages -->
+    <div class="notification error" *ngIf="errorMessage">
+      <i class="fas fa-exclamation-circle"></i>
+      <span>{{ errorMessage }}</span>
+      <button class="close-btn" (click)="errorMessage = ''">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="content">
+      <div class="waitlist-section">
+        <div class="event-controls">
+          <div class="event-selector">
+            <label for="event-select">Select Event:</label>
+            <select id="event-select" [(ngModel)]="selectedEventId" (change)="onEventChange()">
+              <option value="">-- Select an event --</option>
+              <option *ngFor="let event of events" [value]="event.pk_event_id">{{ event.event_name }}</option>
+            </select>
+          </div>
+          
+          <button *ngIf="selectedEventId" class="notify-btn" (click)="notifyWaitlistedUsers()" [disabled]="isNotifying">
+            <i class="fas fa-bell"></i>
+            <span *ngIf="!isNotifying">Notify Waitlisted Users</span>
+            <span *ngIf="isNotifying">
+              <i class="fas fa-spinner fa-spin"></i> Processing...
+            </span>
+          </button>
+        </div>
+        
+        <!-- Notification Results -->
+        <div *ngIf="notificationResult" class="notification-result" [ngClass]="notificationResult.success ? 'success' : 'error'">
+          <div class="notification-header">
+            <h3>Notification Results</h3>
+            <button class="close-btn" (click)="notificationResult = null">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="notification-body">
+            <p><strong>Status:</strong> {{ notificationResult.success ? 'Success' : 'Failed' }}</p>
+            <p><strong>Message:</strong> {{ notificationResult.message }}</p>
+            
+            <div *ngIf="notificationResult.success && notificationResult.notifiedUsers?.length > 0">
+              <p><strong>Available Tickets:</strong> {{ notificationResult.availableTickets }}</p>
+              <p><strong>Users Notified:</strong> {{ notificationResult.notifiedUsers.length }}</p>
+              
+              <div class="notified-users">
+                <h4>Notified Users:</h4>
+                <ul>
+                  <li *ngFor="let user of notificationResult.notifiedUsers">
+                    {{ user.name }} ({{ user.email }})
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div *ngIf="isLoading" class="loading-spinner">
+          <div class="spinner"></div>
+          <p>Loading...</p>
+        </div>
+        
+        <div *ngIf="!isLoading">
+          <div *ngIf="waitlistEntries.length === 0" class="no-entries">
+            <p>No waitlist entries found for this event.</p>
+          </div>
+          
+          <div *ngIf="waitlistEntries.length > 0" class="waitlist-table-container">
+            <table class="waitlist-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Contact</th>
+                  <th>Joined On</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let entry of waitlistEntries; let i = index">
+                  <td>{{ entry.waitlist_id }}</td>
+                  <td>{{ entry.name }}</td>
+                  <td>{{ entry.email }}</td>
+                  <td>{{ entry.contact }}</td>
+                  <td>{{ formatDate(entry.created_at) }}</td>
+                  <td>
+                    <span class="status-badge" [ngClass]="getStatusClass(entry.status)">
+                      {{ entry.status | titlecase }}
+                    </span>
+                  </td>
+                  <td class="actions">
+                    <div class="dropdown">
+                      <button class="dropdown-btn" (click)="toggleDropdown(i)">Actions</button>
+                      <div class="dropdown-content" [class.show]="activeDropdown === i">
+                        <a (click)="updateStatus(entry, 'waiting')" [class.active]="entry.status === 'waiting'">Mark as Waiting</a>
+                        <a (click)="updateStatus(entry, 'notified')" [class.active]="entry.status === 'notified'">Mark as Notified</a>
+                        <a (click)="updateStatus(entry, 'registered')" [class.active]="entry.status === 'registered'">Mark as Registered</a>
+                        <a (click)="removeFromWaitlist(entry)" class="remove-action">Remove from Waitlist</a>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

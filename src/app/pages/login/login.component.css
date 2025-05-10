@@ -1,0 +1,577 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+}
+ 
+
+.parent{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.video-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Place the video behind other content */
+    overflow: hidden;
+    filter: brightness(200%);
+}
+
+.video-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Adjust the color and opacity */
+    z-index: 1; /* Ensure the overlay is above the video */
+}
+
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensure the video covers the background */
+    position: relative;
+    z-index: 0; /* Ensure the video is below the overlay */
+}
+  
+
+.container{
+    background-color: #f7f6f6;
+    border-radius: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
+    position: relative;
+    overflow: hidden;
+    width: 768px;
+    max-width: 100%;
+    min-height: 480px;
+    z-index: 1;
+}
+
+.container p{
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0.3px;
+    margin-top: 20px;
+    margin-bottom: 0px;
+}
+
+.container span{
+    font-size: 12px;
+}
+
+.container a{
+    color: #000000;
+    font-size: 13px;
+    text-decoration: none;
+    margin: 15px 0 10px;
+}
+
+.container button{
+    background-color: #602e2e; /* blue */
+    color: #fff;
+    font-size: 12px;
+    padding: 10px 45px;
+    border: 1.2px solid #fff;
+    border-radius: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Add transition for smooth hover effect */
+}
+
+.container button:hover {
+    background-color: #33000a; /* Darker blue for hover */
+}
+
+.container button.hidden{
+    background-color: transparent;
+    border-color: #fff;
+}
+
+.container form{
+    background-color: #f7f6f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 0 40px;
+    height: 100%;
+}
+
+.container input{
+    background-color: #d6d4d4;
+    border: none;
+    margin: 8px 0;
+    padding: 10px 15px;
+    font-size: 13px;
+    border-radius: 8px;
+    width: 100%;
+    outline: none;
+}
+
+/* Normal placeholder color */
+.container input::placeholder {
+    color: #111111;
+}
+
+/* Error placeholder color */
+.container input.ng-invalid.ng-touched::placeholder,
+.container input.ng-invalid.ng-dirty::placeholder,
+form.submitted input.ng-invalid::placeholder {
+    color: #ff0000;
+    font-weight: bold;
+}
+
+/* For older browsers */
+.container input::-webkit-input-placeholder { color: #111111; }
+.container input::-moz-placeholder { color: #111111; }
+.container input:-ms-input-placeholder { color: #111111; }
+.container input:-moz-placeholder { color: #111111; }
+
+/* Error placeholder for older browsers */
+.container input.ng-invalid.ng-touched::-webkit-input-placeholder,
+.container input.ng-invalid.ng-dirty::-webkit-input-placeholder,
+form.submitted input.ng-invalid::-webkit-input-placeholder { 
+    color: #ff0000; 
+    font-weight: bold;
+}
+
+.container input.ng-invalid.ng-touched::-moz-placeholder,
+.container input.ng-invalid.ng-dirty::-moz-placeholder,
+form.submitted input.ng-invalid::-moz-placeholder { 
+    color: #ff0000; 
+    font-weight: bold;
+}
+
+.container input.ng-invalid.ng-touched:-ms-input-placeholder,
+.container input.ng-invalid.ng-dirty:-ms-input-placeholder,
+form.submitted input.ng-invalid:-ms-input-placeholder { 
+    color: #ff0000; 
+    font-weight: bold;
+}
+
+.container input.ng-invalid.ng-touched:-moz-placeholder,
+.container input.ng-invalid.ng-dirty:-moz-placeholder,
+form.submitted input.ng-invalid:-moz-placeholder { 
+    color: #ff0000; 
+    font-weight: bold;
+}
+
+.form-container{
+    position: absolute;
+    top: 0;
+    height: 100%;
+    transition: all 0.3s ease-in-out;
+}
+
+.sign-up{
+    left: 0;
+    width: 50%;
+    z-index: 2;
+}
+
+.container.active .sign-up{
+    transform: translateX(100%);
+}
+
+.sign-in{
+    left: 0;
+    width: 50%;
+    opacity: 0;
+    z-index: 1;
+    transition: all 0.3s;
+}
+
+.container.active .sign-in{
+    transform: translateX(100%);
+    opacity: 1;
+    z-index: 5;
+    animation: move 0.3s;
+}
+
+@keyframes move{
+    0%, 49.99%{
+        opacity: 0;
+        z-index: 1;
+    }
+    50%, 100%{
+        opacity: 1;
+        z-index: 5;
+    }
+}
+
+.toggle-container{
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    transition: all 0.6s ease-in-out;
+    border-radius: 150px 0 0 100px;
+    z-index: 1000;
+}
+
+.container.active .toggle-container{
+    transform: translateX(-100%);
+    border-radius: 0 150px 100px 0;
+}
+
+.toggle{
+    height: 100%;
+    background:  #9a0d2a; /* Light blue to darker blue */
+    color: #ffffff;
+    position: relative;
+    left: -100%;
+    height: 100%;
+    width: 200%;
+    transform: translateX(0);
+    transition: all 0.3s ease-in-out;
+}
+
+.container.active .toggle{
+    transform: translateX(50%);
+}
+
+.toggle-panel{
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 0 30px;
+    text-align: center;
+    top: 0;
+    transition: all 0.3s ease-in-out;
+}
+
+.toggle-right{
+    transform: translateX(-200%);
+}
+
+.container.active .toggle-right{
+    transform: translateX(0);
+}
+
+.toggle-left{
+    right: 0;
+    transform: translateX(0);
+}
+
+.container.active .toggle-left{
+    transform: translateX(200%);
+}
+
+.container .toggle-left:hover, .container.active .toggle-right:hover {
+    background-color: rgba(56, 142, 60, 0.1); /* Light blue tint on hover */
+    transform: scale(1.05); /* Scale up slightly when hovered */
+}
+
+/* Ensure the transition applies when active or not */
+.toggle-panel:hover {
+    background-color: rgba(56, 142, 60, 0.1); /* blueish tint when hovered */
+    transform: scale(1.05); /* Slight scaling on hover */
+}
+
+/* Bouncing Arrow - reducing space */
+.bounce-arrow {
+  font-size: 50px;
+  color: #ffffff;
+  margin: 0 auto; /* Reduced from 5px to 0 */
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-15px);
+  }
+  60% {
+    transform: translateY(-10px);
+  }
+}
+
+.password-field {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.password-field input {
+    width: 100%;
+    padding-right: 40px; /* Add space for the button */
+}
+
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    z-index: 10;
+    height: 100%;
+}
+
+.password-toggle:focus {
+    outline: none;
+}
+
+.eye-icon {
+    width: 18px;
+    height: 18px;
+    fill: #666;
+    transition: fill 0.2s ease;
+    background: transparent;
+}
+
+.password-toggle:hover .eye-icon {
+    fill: #333;
+}
+
+/* Icon styles */
+button i {
+    margin-right: 8px;
+}
+
+/* Home button styles */
+.home-button {
+    margin-top: 10px;
+    background-color: #4CAF50;
+}
+
+.home-button:hover {
+    background-color: #45a049;
+}
+
+/* Adjust spacing for icons in all buttons */
+button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Form Description */
+.form-description {
+  font-size: 14px;
+  color: #777;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Error Message */
+.error-message {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: -15px;
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+/* Cancel Button */
+.cancel-button {
+  background-color: #e74c3c;
+  margin-top: 10px;
+}
+
+.cancel-button:hover {
+  background-color: #c0392b;
+}
+
+/* Loading Animation Popup */
+.loading-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.loading-popup.fade-out {
+    opacity: 0;
+}
+
+.loading-spinner {
+    background-color: rgb(41, 38, 38);
+    padding: 30px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(0);
+    transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.loading-popup.fade-out .loading-spinner {
+    transform: translateY(10px);
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #9a0d2a;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.loading-spinner p {
+    margin-top: 15px;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Login Success Loading Animation */
+.login-success-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.login-success-loading.fade-out {
+    opacity: 0;
+}
+
+.login-success-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 10001;
+    width: 80%;
+    max-width: 400px;
+    transform: translateY(0);
+    transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.login-success-loading.fade-out .login-success-container {
+    transform: translateY(10px);
+}
+
+.login-success-container p {
+    color: #333;
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Progress Bar */
+.progress-bar-container {
+    width: 100%;
+    height: 16px;
+    background-color: #f3f3f3;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(to right, #9a0d2a, #602e2e);
+    border-radius: 10px;
+    transition: width 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+    will-change: width;
+}
+
+.success-checkmark {
+    width: 60px;
+    height: 60px;
+    background-color: #4CAF50;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    animation: scaleIn 0.5s ease-in-out;
+}
+
+.checkmark {
+    color: white;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+/* Swipe overlay animation */
+.swipe-overlay {
+    position: absolute;
+    top: 0;
+    left: -100%; /* Starting position */
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, #9a0d2a, #602e2e);
+    z-index: 10002;
+    pointer-events: none; /* Make sure it doesn't block interaction */
+}
+
+@keyframes scaleIn {
+    0% { transform: scale(0); }
+    60% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.dissolve-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  opacity: 1;
+  z-index: 9999;
+  transition: opacity 0.8s ease-in-out;
+}
+
+.dissolve-overlay.fade-out {
+  opacity: 0;
+}

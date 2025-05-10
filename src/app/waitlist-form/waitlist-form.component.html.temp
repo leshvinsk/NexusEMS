@@ -1,0 +1,39 @@
+<h2>Join Waitlist for {{ data.eventName }}</h2>
+
+<div *ngIf="errorMessage" style="color: red; margin-bottom: 10px;">
+  {{ errorMessage }}
+</div>
+
+<form [formGroup]="waitlistForm" (ngSubmit)="onSubmit()">
+  <div>
+    <label for="name">Full Name:</label>
+    <input id="name" type="text" formControlName="name" required>
+    <div *ngIf="waitlistForm.get('name')?.invalid && waitlistForm.get('name')?.touched" style="color: red;">
+      Name is required
+    </div>
+  </div>
+  
+  <div style="margin-top: 10px;">
+    <label for="email">Email:</label>
+    <input id="email" type="email" formControlName="email" required>
+    <div *ngIf="waitlistForm.get('email')?.invalid && waitlistForm.get('email')?.touched" style="color: red;">
+      Please enter a valid email
+    </div>
+  </div>
+  
+  <div style="margin-top: 10px;">
+    <label for="contact">Contact Number:</label>
+    <input id="contact" type="tel" formControlName="contact" required>
+    <div *ngIf="waitlistForm.get('contact')?.invalid && waitlistForm.get('contact')?.touched" style="color: red;">
+      Please enter a valid contact number
+    </div>
+  </div>
+  
+  <div style="margin-top: 20px;">
+    <button type="button" (click)="onCancel()" [disabled]="isSubmitting">Cancel</button>
+    <button type="submit" [disabled]="waitlistForm.invalid || isSubmitting" style="margin-left: 10px;">
+      <span *ngIf="isSubmitting">Submitting...</span>
+      <span *ngIf="!isSubmitting">Join Waitlist</span>
+    </button>
+  </div>
+</form>

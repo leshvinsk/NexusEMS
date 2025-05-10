@@ -1,0 +1,44 @@
+<div class="failed-container">
+  <!-- Error message with animation -->
+  <div class="error-message">
+    <div class="error-icon">
+      <i class="fas fa-times-circle"></i>
+    </div>
+    <h1>Booking Failed</h1>
+    <p>Your payment could not be processed.</p>
+    <p>Error Code: <strong>{{ errorCode }}</strong></p>
+    <p class="error-details">{{ errorMessage }}</p>
+  </div>
+
+  <!-- Event information with styling -->
+  <div class="event-info">
+    <div class="brand-logo">
+      <div class="logo">
+        <img src="assets/favicon/favicon.svg" alt="NexusEMS Logo" width="150px" height="150px">
+      </div>
+      <p>NexusEMS</p>
+    </div>
+    <div class="event-details">
+      <h2>{{ eventName }}</h2>
+      <p><i class="fas fa-calendar-alt"></i> Date: {{ eventDate }}</p>
+      <p><i class="fas fa-clock"></i> Time: {{ eventTime }}</p>
+      <p><i class="fas fa-exclamation-triangle"></i> Status: <span class="status-failed">Payment Failed</span></p>
+    </div>
+  </div>
+
+  <!-- Possible reasons for failure -->
+  <div class="failure-reasons">
+    <h3>Possible reasons for failure:</h3>
+    <ul>
+      <li><i class="fas fa-credit-card"></i> Insufficient funds in your account</li>
+      <li><i class="fas fa-ban"></i> Transaction declined by your bank</li>
+      <li><i class="fas fa-network-wired"></i> Network connectivity issues</li>
+      <li><i class="fas fa-lock"></i> Security verification failed</li>
+    </ul>
+  </div>
+
+  <!-- Retry button -->
+  <button class="retry-btn" (click)="retry()">
+    <i class="fas fa-redo"></i> Retry Payment
+  </button>
+</div>

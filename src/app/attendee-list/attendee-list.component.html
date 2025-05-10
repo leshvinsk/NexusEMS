@@ -1,0 +1,143 @@
+<div class="organizer-container">
+  <div class="organizer-header">
+    <div class="header-left">
+      <h2>Attendee Management</h2>
+    </div>
+    <div class="user-info">
+      <span>{{ currentUser?.username || 'User' }}</span>
+      <i class="fas fa-chevron-right"></i>
+      <button class="logout-btn" (click)="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span *ngIf="!isSidebarCollapsed">Log Out</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar" [class.collapsed]="isSidebarCollapsed">
+    <div class="sidebar-menu">
+      <a [routerLink]="['/organizer']" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item">
+          <i class="fas fa-calendar-alt"></i>
+          <span *ngIf="!isSidebarCollapsed">Events</span>
+      </a>
+      <a [routerLink]="['/event-analytics']" routerLinkActive="active" class="menu-item">
+          <i class="fas fa-chart-line"></i>
+          <span *ngIf="!isSidebarCollapsed">Analytics</span>
+      </a>
+      <a [routerLink]="['/attendee-list']" routerLinkActive="active" class="menu-item">
+          <i class="fas fa-users"></i>
+          <span *ngIf="!isSidebarCollapsed">Attendees</span>
+      </a>
+      <a [routerLink]="['/waitlist-management']" routerLinkActive="active" class="menu-item">
+          <i class="fas fa-list"></i>
+          <span *ngIf="!isSidebarCollapsed">Waitlist Management</span>
+      </a>
+  </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" [class.expanded]="isSidebarCollapsed">
+    <!-- Page Title -->
+    <h1 class="page-title">Attendee Management</h1>
+
+    <!-- Notification Messages -->
+    <div class="notification error" *ngIf="errorMessage">
+      <i class="fas fa-exclamation-circle"></i>
+      <span>{{ errorMessage }}</span>
+      <button class="close-btn" (click)="errorMessage = ''">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="notification success" *ngIf="successMessage">
+      <i class="fas fa-check-circle"></i>
+      <span>{{ successMessage }}</span>
+      <button class="close-btn" (click)="successMessage = ''">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Confirmation Dialog -->
+    <div class="confirmation-dialog-overlay" *ngIf="showConfirmDialog">
+      <div class="confirmation-dialog">
+        <h3>{{ confirmDialogTitle }}</h3>
+        <p>{{ confirmDialogMessage }}</p>
+        <div class="dialog-buttons">
+          <button class="cancel-btn" (click)="onConfirmDialogResponse(false)">Cancel</button>
+          <button class="confirm-btn" (click)="onConfirmDialogResponse(true)">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="attendee-section">
+        <div class="event-controls">
+          <div class="event-selector">
+            <label for="event-select">Select Event:</label>
+            <select id="event-select" [(ngModel)]="selectedEventId" (change)="onEventChange()">
+              <option value="">-- Select an event --</option>
+              <option *ngFor="let event of events" [value]="event.pk_event_id">{{ event.event_name }}</option>
+            </select>
+          </div>
+          
+          <div class="attendee-count" *ngIf="attendees.length > 0">
+            <span>Total Attendees: <strong>{{ attendees.length }}</strong></span>
+          </div>
+        </div>
+        
+        <div *ngIf="isLoading" class="loading-spinner">
+          <div class="spinner"></div>
+          <p>Loading...</p>
+        </div>
+        
+        <div *ngIf="!isLoading">
+          <div *ngIf="attendees.length === 0" class="no-entries">
+            <p>No attendees found for this event.</p>
+          </div>
+          
+          <div *ngIf="attendees.length > 0" class="attendee-table-container">
+            <table class="attendee-table">
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Ticket Type</th>
+                  <th>Price</th>
+                  <th>Seat</th>
+                  <th>Booking Date</th>
+                  <th>Payment Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let attendee of attendees; let i = index">
+                  <td>{{ attendee.booking_id }}</td>
+                  <td>{{ attendee.user_name }}</td>
+                  <td>{{ attendee.user_email }}</td>
+                  <td>{{ attendee.ticket_type }}</td>
+                  <td>${{ attendee.ticket_price.toFixed(2) }}</td>
+                  <td>{{ attendee.seat_number || 'N/A' }}</td>
+                  <td>{{ formatDate(attendee.booking_date) }}</td>
+                  <td>
+                    <span class="status-badge" [ngClass]="getPaymentStatusClass(attendee.payment_status)">
+                      {{ attendee.payment_status }}
+                    </span>
+                  </td>
+                  <td class="actions">
+                    <div class="dropdown">
+                      <button class="dropdown-btn" (click)="toggleDropdown(i)">Actions</button>
+                      <div class="dropdown-content" [class.show]="activeDropdown === i">
+                        <a (click)="showCancelConfirmation(attendee)" class="cancel-action">Cancel Booking</a>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

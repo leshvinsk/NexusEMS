@@ -1,0 +1,66 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  
+  .logo:hover {
+    transform: translateY(-2px);
+  }
+  
+  .logo img {
+    height: 40px;
+    margin-right: 10px;
+    border-radius: 5px;
+  }
+  
+  .logo-text {
+    color: #333;
+  }
+  
+  .logo:hover .logo-text {
+    color: #2563EB;
+  }
+  
+  .highlight {
+    color: #2563EB;
+  }
+  
+  .nav-links a {
+    margin: 0 10px;
+    text-decoration: none;
+    color: #333;
+    cursor: pointer;
+  }
+  
+  .nav-links a:hover {
+      color: #2563EB; 
+    }
+  
+    .sign-in-btn {
+      background-color: #2563EB;
+      color: #fff;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    
+    .sign-in-btn i {
+      margin-right: 8px; 
+    }
+  

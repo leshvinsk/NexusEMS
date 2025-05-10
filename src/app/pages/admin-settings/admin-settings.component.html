@@ -1,0 +1,324 @@
+<div class="admin-container">
+    <div class="admin-header">
+        <h2>Auditorium Admin</h2>
+        <div class="user-info">
+            <span>{{ currentUser?.username || currentUser?.name || 'Admin' }}</span>
+            <i class="fas fa-chevron-right"></i>
+            <button class="logout-btn" (click)="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span *ngIf="!isSidebarCollapsed">Log Out</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" [class.collapsed]="isSidebarCollapsed">
+        <div class="sidebar-menu">
+            <a [routerLink]="['/administrator']" routerLinkActive="active" class="menu-item" (click)="router.navigate(['/administrator'])">
+                <i class="fas fa-users"></i>
+                <span *ngIf="!isSidebarCollapsed">Organizers</span>
+            </a>
+            <a [routerLink]="['/admin-analytics']" routerLinkActive="active" class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span *ngIf="!isSidebarCollapsed">Analytics</span>
+            </a>
+            <a [routerLink]="['/admin-settings']" routerLinkActive="active" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span *ngIf="!isSidebarCollapsed">Settings</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" [class.expanded]="isSidebarCollapsed">
+        <div class="content">
+            <div class="settings-header">
+                <h1>Account Settings</h1>
+            </div>
+
+            <!-- Notification Messages -->
+            <div class="notification success-notification" *ngIf="showSuccess">
+                <i class="fas fa-check-circle"></i>
+                <span>{{ successMessage }}</span>
+                <button class="close-btn" (click)="showSuccess = false">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="notification error-notification" *ngIf="showError">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>{{ errorMessage }}</span>
+                <button class="close-btn" (click)="showError = false">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="cards-container">
+                <div class="settings-card profile-card">
+                    <div class="card-header">
+                        <h2>Profile Information</h2>
+                    </div>
+                    <div class="card-content">
+                        <form [formGroup]="profileForm">
+                            <!-- Username field -->
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <div class="input-wrapper">
+                                    <input id="username" type="text" formControlName="username" class="form-control disabled" [disabled]="true">
+                                </div>
+                            </div>
+
+                            <!-- Email field -->
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <div class="input-wrapper">
+                                    <input id="email" type="email" formControlName="email" class="form-control disabled" [disabled]="true">
+                                    <button *ngIf="!isEditingEmail" class="update-btn" (click)="toggleEditEmail()">Update</button>
+                                </div>
+                            </div>
+
+                            <!-- Email verification section (visible when editing email) -->
+                            <div *ngIf="isEditingEmail" class="verification-section">
+                                <!-- Step 1: Check email and send code section -->
+                                <div *ngIf="!isCodeSent" class="verification-step">
+                                    <div class="form-group" *ngIf="isEditingEmail">
+                                        <label for="newEmail">New Email</label>
+                                        <div class="input-wrapper">
+                                            <input id="newEmail" 
+                                                   type="email" 
+                                                   [(ngModel)]="newEmailValue" 
+                                                   [ngModelOptions]="{standalone: true}" 
+                                                   class="form-control" 
+                                                   [ngClass]="{'is-invalid': showEmailError}" 
+                                                   placeholder="Enter new email address"
+                                                   (click)="clearEmailError()"
+                                                   (input)="onEmailValueChange()">
+                                        </div>
+                                        <!-- Email error message -->
+                                        <div *ngIf="showEmailError" class="error-message">{{ emailErrorMessage }}</div>
+                                    </div>
+                                    <div class="button-container">
+                                        <button [disabled]="!newEmailValue || !isValidEmail(newEmailValue) || isCheckingEmail" 
+                                                class="send-code-btn" 
+                                                (click)="checkEmailAndSendCode()">
+                                            <span *ngIf="!isCheckingEmail">Send Verification Code</span>
+                                            <span *ngIf="isCheckingEmail" class="spinner-border spinner-border-sm"></span>
+                                        </button>
+                                        <button class="cancel-btn" (click)="cancelEmailUpdate()">Cancel</button>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2: Verify code section (visible after code is sent) -->
+                                <div *ngIf="isCodeSent" class="verification-step">
+                                    <div class="verification-message">
+                                        A verification code has been sent to your registered email address.
+                                        <div class="countdown" *ngIf="countdownActive">
+                                            Code expires in: {{ countdownMinutes }}:{{ countdownSeconds < 10 ? '0' : '' }}{{ countdownSeconds }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="verification-code">Verification Code</label>
+                                        <div class="input-wrapper">
+                                            <input type="text" 
+                                                   id="verification-code"
+                                                   [(ngModel)]="enteredCode" 
+                                                   [ngModelOptions]="{standalone: true}" 
+                                                   placeholder="Enter 6-digit code" 
+                                                   maxlength="6" 
+                                                   class="form-control"
+                                                   (click)="clearVerificationError()"
+                                                   (input)="onVerificationCodeChange()"
+                                                   #codeInput>
+                                            <button type="button" 
+                                                    class="clear-btn" 
+                                                    (click)="enteredCode = ''; codeInput.focus()"
+                                                    *ngIf="enteredCode">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <!-- Verification messages -->
+                                        <div *ngIf="showVerificationError" class="error-message">{{ verificationMessage }}</div>
+                                    </div>
+                                    <div class="button-container">
+                                        <button [disabled]="!enteredCode || enteredCode.length < 6 || isVerifying || !countdownActive" 
+                                                class="verify-btn" 
+                                                (click)="verifyCode()">
+                                            <span *ngIf="!isVerifying">Verify and Update Email</span>
+                                            <span *ngIf="isVerifying" class="spinner-border spinner-border-sm"></span>
+                                        </button>
+                                        <button class="cancel-btn" (click)="cancelEmailUpdate()">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contact No field -->
+                            <div class="form-group">
+                                <label for="contact_no">Contact No</label>
+                                <div class="input-wrapper">
+                                    <input id="contact_no" type="text" formControlName="contact_no" class="form-control disabled" [disabled]="true">
+                                    <button *ngIf="!isEditingPhone" class="update-btn" (click)="toggleEditPhone()">Update</button>
+                                </div>
+                            </div>
+
+                            <!-- Contact verification section (visible when editing contact) -->
+                            <div *ngIf="isEditingPhone" class="verification-section">
+                                <!-- Step 1: Check contact and send code section -->
+                                <div *ngIf="!isContactCodeSent" class="verification-step">
+                                    <div class="form-group" *ngIf="isEditingPhone">
+                                        <label for="newContactNo">New Contact Number</label>
+                                        <div class="input-wrapper">
+                                            <input id="newContactNo" 
+                                                   type="text" 
+                                                   [(ngModel)]="newContactValue" 
+                                                   [ngModelOptions]="{standalone: true}" 
+                                                   class="form-control" 
+                                                   [ngClass]="{'is-invalid': showContactError}" 
+                                                   placeholder="Enter new contact number"
+                                                   (click)="clearContactError()"
+                                                   (input)="onContactValueChange()">
+                                        </div>
+                                        <!-- Contact error message -->
+                                        <div *ngIf="showContactError" class="error-message">{{ contactErrorMessage }}</div>
+                                    </div>
+                                    <div class="button-container">
+                                        <button [disabled]="!newContactValue || !isValidContact(newContactValue) || isCheckingContact" 
+                                                class="send-code-btn" 
+                                                (click)="checkContactAndSendCode()">
+                                            <span *ngIf="!isCheckingContact">Send Verification Code</span>
+                                            <span *ngIf="isCheckingContact" class="spinner-border spinner-border-sm"></span>
+                                        </button>
+                                        <button class="cancel-btn" (click)="cancelContactUpdate()">Cancel</button>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2: Verify code section (visible after code is sent) -->
+                                <div *ngIf="isContactCodeSent" class="verification-step">
+                                    <div class="verification-message">
+                                        A verification code has been sent to your registered email address.
+                                        <div class="countdown" *ngIf="contactCountdownActive">
+                                            Code expires in: {{ contactCountdownMinutes }}:{{ contactCountdownSeconds < 10 ? '0' : '' }}{{ contactCountdownSeconds }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="contact-verification-code">Verification Code</label>
+                                        <div class="input-wrapper">
+                                            <input type="text" 
+                                                   id="contact-verification-code"
+                                                   [(ngModel)]="contactEnteredCode" 
+                                                   [ngModelOptions]="{standalone: true}" 
+                                                   placeholder="Enter 6-digit code" 
+                                                   maxlength="6" 
+                                                   class="form-control"
+                                                   (click)="clearContactVerificationError()"
+                                                   (input)="onContactVerificationCodeChange()"
+                                                   (keyup.enter)="contactEnteredCode.length === 6 && contactCountdownActive ? verifyContactCode() : null"
+                                                   #contactCodeInput>
+                                            <button type="button" 
+                                                    class="clear-btn" 
+                                                    (click)="contactEnteredCode = ''; contactCodeInput.focus()"
+                                                    *ngIf="contactEnteredCode">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <!-- Verification messages -->
+                                        <div *ngIf="showContactVerificationError" class="error-message">{{ contactVerificationMessage }}</div>
+                                    </div>
+                                    <!-- Verify button -->
+                                    <div class="button-container">
+                                        <button id="verifyContactButton" 
+                                                [disabled]="!contactEnteredCode || contactEnteredCode.length < 6 || isContactVerifying || !contactCountdownActive" 
+                                                class="verify-btn" 
+                                                [class.active-btn]="contactEnteredCode.length === 6 && contactCountdownActive && !isContactVerifying"
+                                                (click)="verifyContactCode()">
+                                            <span *ngIf="!isContactVerifying">Verify and Update Contact</span>
+                                            <span *ngIf="isContactVerifying">
+                                                <i class="fas fa-spinner fa-spin"></i> Processing...
+                                            </span>
+                                        </button>
+                                        <button class="cancel-btn" (click)="cancelContactUpdate()">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="settings-card password-card">
+                    <div class="card-header">
+                        <h2>Change Password</h2>
+                    </div>
+                    <div class="card-content">
+                        <form [formGroup]="passwordForm">
+                            <!-- Current Password -->
+                            <div class="form-group">
+                                <label for="currentPassword">Current Password</label>
+                                <div class="input-wrapper password-input-wrapper">
+                                    <input id="currentPassword" [type]="showCurrentPassword ? 'text' : 'password'" formControlName="currentPassword" class="form-control password-input">
+                                    <button type="button" class="toggle-password-inner" (click)="togglePasswordVisibility('current')">
+                                        <i class="fa" [ngClass]="showCurrentPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- New Password -->
+                            <div class="form-group">
+                                <label for="newPassword">New Password</label>
+                                <div class="input-wrapper password-input-wrapper">
+                                    <input 
+                                        id="newPassword" 
+                                        [type]="showNewPassword ? 'text' : 'password'" 
+                                        formControlName="newPassword" 
+                                        class="form-control password-input"
+                                        (input)="checkPasswordStrength()">
+                                    <button type="button" class="toggle-password-inner" (click)="togglePasswordVisibility('new')">
+                                        <i class="fa" [ngClass]="showNewPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Password Strength Meter -->
+                                <div class="password-strength-meter" *ngIf="passwordForm.get('newPassword')?.value">
+                                    <div class="strength-bar">
+                                        <div 
+                                            class="strength-progress" 
+                                            [style.width.%]="passwordStrength.percentage" 
+                                            [ngClass]="passwordStrength.class">
+                                        </div>
+                                    </div>
+                                    <div class="strength-info">
+                                        <span class="strength-text" [ngClass]="passwordStrength.class">
+                                            {{ passwordStrength.text }}
+                                        </span>
+                                        <span class="strength-requirement" *ngIf="passwordStrength.percentage < 60">
+                                            (Medium strength or higher required)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Confirm Password -->
+                            <div class="form-group">
+                                <label for="confirmPassword">Confirm Password</label>
+                                <div class="input-wrapper password-input-wrapper">
+                                    <input id="confirmPassword" [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirmPassword" class="form-control password-input">
+                                    <button type="button" class="toggle-password-inner" (click)="togglePasswordVisibility('confirm')">
+                                        <i class="fa" [ngClass]="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                    </button>
+                                </div>
+                                <div *ngIf="passwordForm.hasError('passwordMismatch') && passwordForm.get('confirmPassword')?.touched" class="error-message">
+                                    Passwords do not match
+                                </div>
+                            </div>
+
+                            <button class="change-password-btn" (click)="changePassword()" [disabled]="passwordForm.invalid || isChangingPassword">
+                                <span *ngIf="!isChangingPassword">Change Password</span>
+                                <span *ngIf="isChangingPassword">
+                                    <i class="fas fa-spinner fa-spin"></i> Changing Password...
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,162 @@
+<div class="payment-container">
+  <div class="brand-header">
+    <img src="assets/favicon/favicon.svg" alt="Brand Logo" class="brand-logo" />
+    <h2>Complete Your Payment</h2>
+  </div>
+
+  <div class="booking-summary" *ngIf="bookingData">
+    <h3>Booking Summary</h3>
+    <div class="summary-details">
+      <div class="summary-row">
+        <span>Event:</span>
+        <span>{{ bookingData.event_name }}</span>
+      </div>
+      <div class="summary-row">
+        <span>Seats:</span>
+        <span>{{ bookingData.seats?.length || 0 }} seat(s)</span>
+      </div>
+      <div class="summary-row" *ngIf="bookingData.subtotal">
+        <span>Subtotal:</span>
+        <span>${{ bookingData.subtotal.toFixed(2) }}</span>
+      </div>
+      <div class="summary-row" *ngIf="bookingData.discount && bookingData.discount > 0">
+        <span>Discount:</span>
+        <span>-${{ bookingData.discount.toFixed(2) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="amount-display">
+    <span>Total Amount: <strong>${{ bookingData?.total?.toFixed(2) || '0.00' }}</strong></span>
+  </div>
+
+  <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()" novalidate>
+    <!-- Full Name -->
+    <div class="form-group">
+      <label for="fullName">Full Name</label>
+      <input
+        type="text"
+        id="fullName"
+        formControlName="fullName"
+        [ngClass]="{'is-invalid': submitted && f['fullName'].errors}"
+        autocomplete="name">
+      <div class="error-container" *ngIf="submitted && f['fullName'].errors">
+        <div *ngFor="let validation of validationMessages.fullName">
+          <div class="error-message" *ngIf="f['fullName'].hasError(validation.type)">
+            {{ validation.message }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input
+        type="email"
+        id="email"
+        formControlName="email"
+        [ngClass]="{'is-invalid': submitted && f['email'].errors}"
+        autocomplete="email">
+      <div class="error-container" *ngIf="submitted && f['email'].errors">
+        <div *ngFor="let validation of validationMessages.email">
+          <div class="error-message" *ngIf="f['email'].hasError(validation.type)">
+            {{ validation.message }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card Number -->
+    <div class="form-group card-input">
+      <label for="cardNumber">Card Number</label>
+      <input
+        type="text"
+        id="cardNumber"
+        formControlName="cardNumber"
+        [ngClass]="{'is-invalid': submitted && f['cardNumber'].errors}"
+        (input)="formatCardNumber($event)"
+        (keyup)="formatCardNumber($event)"
+        placeholder="1234 5678 9012 3456"
+        maxlength="19"
+        numbersOnly
+        autocomplete="cc-number">
+      <div class="card-icons">
+        <img src="assets/images/visa.svg" alt="Visa" onerror="this.src='https://www.visa.com.my/dam/VCOM/regional/ve/romania/blogs/hero-image/visa-logo-800x450.jpg'" />
+        <img src="assets/images/mastercard.svg" alt="Mastercard" onerror="this.src='https://elixirbrandcomm.com/Unbox/2019/March/images/mastercard.png'" />
+      </div>
+      <div class="error-container" *ngIf="submitted && f['cardNumber'].errors">
+        <div *ngFor="let validation of validationMessages.cardNumber">
+          <div class="error-message" *ngIf="f['cardNumber'].hasError(validation.type)">
+            {{ validation.message }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <!-- Expiry Date -->
+      <div class="form-group">
+        <label for="expiryDate">Expiry Date</label>
+        <input
+          type="text"
+          id="expiryDate"
+          formControlName="expiryDate"
+          [ngClass]="{'is-invalid': submitted && f['expiryDate'].errors}"
+          (input)="formatExpiryDate($event)"
+          (keyup)="formatExpiryDate($event)"
+          placeholder="MM/YY"
+          maxlength="5"
+          numbersOnly
+          autocomplete="cc-exp">
+        <div class="error-container" *ngIf="submitted && f['expiryDate'].errors">
+          <div *ngFor="let validation of validationMessages.expiryDate">
+            <div class="error-message" *ngIf="f['expiryDate'].hasError(validation.type)">
+              {{ validation.message }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CVV -->
+      <div class="form-group">
+        <label for="cvv">CVV</label>
+        <input
+          type="password"
+          id="cvv"
+          formControlName="cvv"
+          [ngClass]="{'is-invalid': submitted && f['cvv'].errors}"
+          maxlength="4"
+          numbersOnly
+          autocomplete="cc-csc">
+        <div class="error-container" *ngIf="submitted && f['cvv'].errors">
+          <div *ngFor="let validation of validationMessages.cvv">
+            <div class="error-message" *ngIf="f['cvv'].hasError(validation.type)">
+              {{ validation.message }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <button
+      type="submit"
+      [disabled]="processing">
+      <span *ngIf="!processing">Complete Payment</span>
+      <span *ngIf="processing" class="spinner">
+        <i class="fa fa-spinner fa-spin"></i> Processing...
+      </span>
+    </button>
+
+    <!-- Secure Payment Notice -->
+    <div class="secure-payment">
+      <i class="fa fa-lock"></i> Your payment information is secure and encrypted
+    </div>
+
+    <!-- Test Card Notice -->
+    <div class="test-card-notice">
+      <p><i class="fa fa-info-circle"></i> <strong>For testing:</strong> Use card number "4111 1111 1111 0000" to simulate a payment failure.</p>
+    </div>
+  </form>
+</div>  

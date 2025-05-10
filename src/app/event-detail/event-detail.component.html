@@ -1,0 +1,145 @@
+<app-navbar></app-navbar>
+
+<!-- Loading state with spinning circle -->
+<div *ngIf="loading" class="loading-container" [class.fade-out]="loadingFinished">
+  <div class="loading-content">
+    <div class="spinner-container">
+      <div class="spinner"></div>
+    </div>
+    <p>{{ loadingMessage }}</p>
+  </div>
+</div>
+
+<!-- Event content -->
+<div [class.fade-in]="!loading" [style.display]="loading ? 'none' : 'block'">
+  <!-- Error state -->
+  <div *ngIf="error" class="error-state">
+    <p>{{ error }}</p>
+  </div>
+
+  <div *ngIf="!error && event" class="event-content-container">
+    <div class="event-hero" [style.backgroundImage]="'url(https://images.unsplash.com/photo-1560523159-94c9d18bcf27?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)'">
+      <!-- Back button -->
+      <a routerLink="/home" class="back-button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>Back</span>
+      </a>
+      
+      <div class="event-info">
+        <h1>{{ event.event_name }}</h1>
+        <p>
+          <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </span> 
+          {{ extractDate(event.start_date_time) }}
+        </p>
+        <p>
+          <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </span> 
+          {{ extractTime(event.start_date_time) }} - {{ extractTime(event.end_date_time)}}
+        </p>
+        <!--
+        <span
+          class="badge"
+          [ngClass]="{ open: event.registrationStatus === 'Open' }"
+          >
+          {{ event.registrationStatus }}
+          </span>
+        -->
+      </div>
+    </div>
+
+    <div class="event-content">
+      <div class="event-description">
+        <h2>About The Event</h2>
+        <p>{{ event.description }}</p>
+      </div>
+
+      <div class="registration-sidebar">
+        <h3>Register</h3>
+        <div *ngIf="ticketTypes.length === 0" class="loading-ticket-types">
+          <p>Loading ticket information...</p>
+        </div>
+        <div *ngFor="let ticket of ticketTypes" class="ticket-type-item">
+          <p>{{ ticket.type }}: {{ ticket.price }}</p>
+          <div class="ticket-info">
+            <span class="ticket-availability">{{ ticket.available }} of {{ ticket.total }} available</span>
+          </div>
+          <div class="ticket-progress-bar">
+            <div
+              class="ticket-progress"
+              [style.width]="(ticket.available / ticket.total) * 100 + '%'"
+            ></div>
+          </div>
+        </div>
+        
+        <!-- Show Register button if event is not sold out -->
+        <ng-container *ngIf="!isSoldOut; else soldOutTemplate">
+          <a [routerLink]="['/seat-selection', event.pk_event_id]" class="register-link">
+            <button class="register-btn">Register Now</button>
+          </a>
+        </ng-container>
+        
+        <!-- Show Sold Out message and waitlist option if event is sold out -->
+        <ng-template #soldOutTemplate>
+          <div class="sold-out-message">
+            <p>Tickets are Sold Out</p>
+          </div>
+          <button (click)="openWaitlistForm()" class="waitlist-btn">Join the Waitlist</button>
+        </ng-template>
+      </div>
+    </div>
+
+    <!--
+    <div class="event-schedule">
+      <h2>Event Schedule</h2>
+      <div *ngFor="let day of event.schedule" class="accordion">
+        <div class="accordion-header">{{ day.day }}</div>
+        <div class="accordion-content">
+          <ul>
+            <li *ngFor="let activity of day.activities">
+              <strong>{{ activity.time }}</strong> - {{ activity.description }}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    -->
+
+    <div class="featured-speakers">
+      <h2>Event Highlights</h2>
+      <div class="speaker-grid">
+        <div *ngFor="let file of event.files" class="speaker-card">
+          <img
+            [src]="getBase64Image(file)"
+            [alt]="file.filename"
+            class="speaker-image"
+          />
+          <h3>{{ file.filename }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scroll to top button -->
+<button 
+  class="scroll-to-top" 
+  [ngClass]="{'visible': showScrollButton}" 
+  (click)="scrollToTop()">
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="18 15 12 9 6 15"></polyline>
+  </svg>
+</button>

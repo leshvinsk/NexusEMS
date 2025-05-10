@@ -1,0 +1,212 @@
+<app-navbar></app-navbar>
+
+<div class="seat-selection-container">
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-message" *ngIf="loadingError">
+    <p>{{ loadingError }}</p>
+  </div>
+
+  <!-- Header Section -->
+  <div class="header-section">
+    <h1>{{ event?.event_name || 'Select Your Seats' }}</h1>
+    <div class="timer" [ngClass]="{'timer-warning': timeLeft < 120}">
+      <span class="timer-icon">⏱️</span>
+      <span class="timer-text">Time remaining: {{ formatTime() }}</span>
+    </div>
+  </div>
+
+  <!-- Venue Layout Section -->
+  <div class="venue-layout">
+    <h2>Venue Layout</h2>
+    <div class="venue-layout-container">
+      <div class="venue-image">
+        <img src="assets/images/seating.png" alt="Venue Layout">
+      </div>
+      <div class="venue-sections">
+        <div class="venue-section-info">
+          <h3>Lower Foyer Sections</h3>
+          <p>The Lower Foyer offers the closest view of the stage with three distinct sections:</p>
+          <ul>
+            <li><strong>LF-Left:</strong> Left wing of the Lower Foyer with excellent side views</li>
+            <li><strong>LF-Center:</strong> Center section with the best direct view of the stage</li>
+            <li><strong>LF-Right:</strong> Right wing of the Lower Foyer with excellent side views</li>
+          </ul>
+        </div>
+        <div class="venue-section-info">
+          <h3>Balcony Sections</h3>
+          <p>The Balcony offers elevated views of the stage with three distinct sections:</p>
+          <ul>
+            <li><strong>B-Left:</strong> Left wing of the Balcony with elevated side views</li>
+            <li><strong>B-Center:</strong> Center section of the Balcony with the best elevated view</li>
+            <li><strong>B-Right:</strong> Right wing of the Balcony with elevated side views</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Layout Section Selection -->
+    <div class="layout-selection">
+      <h2>Select Seating Section</h2>
+      <div class="layout-options">
+        <select [(ngModel)]="selectedLayout" (change)="onLayoutChange()">
+          <option value="">Choose a section</option>
+          <option *ngFor="let section of layoutSections" [value]="section.id">
+            {{ section.name }}
+          </option>
+        </select>
+      </div>
+    
+      <!-- Booking Instructions -->
+      <div class="layout-description">
+        <h5>Booking Instructions</h5>
+        <ul>
+          <li>Choose a section to view available seats and pricing.</li>
+          <li>Each section has its own unique view and pricing structure.</li>
+          <li>Click on a seat to select it. Selected seats will be highlighted, click again deselect it</li>
+          <li>Booking summary displays the selected seats with their pricing, you may chose to deselect a seat by removing it from the booking summary.</li>
+          <li>Click "Continue to Checkout" to proceed with your booking.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Section Info -->
+    <div class="section-info" *ngIf="selectedLayout">
+      <div class="section-info-content">
+        <h3>{{ currentLayoutSection?.name }}</h3>
+        <p>{{ currentLayoutSection?.description }}</p>
+      </div>
+      <div class="total-seats">
+        <span>Available Seats:</span>
+        <span class="seat-count">{{ availableSeatsCount }} / {{ totalSeatsCount }}</span>
+      </div>
+    </div>
+
+    <!-- Seating Layout and Booking Summary -->
+    <div class="layout-and-summary" *ngIf="selectedLayout">
+      <!-- Seating Layout -->
+      <div class="seating-layout">
+        <div class="stage">
+          <div class="stage-label">STAGE</div>
+        </div>
+
+        <div class="seats-container">
+          <div class="row-label-container">
+            <div class="row-label" *ngFor="let row of seatRows | keyvalue">
+              {{ row.key }}
+            </div>
+          </div>
+
+          <div class="seats-grid">
+            <div class="seat-row"
+                *ngFor="let row of seatRows | keyvalue"
+                [attr.data-section]="selectedLayout.includes('-left') ? 'left' :
+                                    selectedLayout.includes('-right') ? 'right' : 'center'">
+              <div
+                class="seat"
+                *ngFor="let seat of row.value"
+                [ngClass]="{
+                  'seat-booked': seat.status === 'booked',
+                  'seat-selected': seat.status === 'selected'
+                }"
+                [style.background-color]="getSeatColor(seat)"
+                [title]="getSeatTitle(seat)"
+                (click)="toggleSeatSelection(seat)"
+              >
+                {{ seat.number }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="seat-legend">
+          <div class="legend-item" *ngFor="let type of ticketTypesArray">
+            <div class="legend-color" [style.background-color]="type.color"></div>
+            <span>{{ type.name }} (${{ type.price }})</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color seat-booked"></div>
+            <span>Booked</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color seat-selected"></div>
+            <span>Selected</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Booking Summary -->
+      <div class="booking-summary">
+        <h2>Booking Summary</h2>
+
+        <div class="summary-content" *ngIf="bookingSummary.selectedSeats.length > 0">
+          <div class="selected-seats">
+            <h3>Selected Seats</h3>
+            <div class="seat-list">
+              <div class="seat-item" *ngFor="let seat of bookingSummary.selectedSeats">
+                <div class="seat-details">
+                  <span class="seat-id">{{ seat.row }}{{ seat.number }}</span>
+                  <span class="seat-section">{{ getSectionName(seat.section) }}</span>
+                  <span class="seat-type">{{ seatTypes[seat.type].name }}</span>
+                  <span class="seat-price">${{ seat.price }}</span>
+                </div>
+                <button class="remove-seat-btn" (click)="removeSeat(seat)">
+                  <span class="remove-icon">×</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="price-summary">
+            <div class="price-row">
+              <span>Subtotal</span>
+              <span>${{ bookingSummary.subtotal }}</span>
+            </div>
+            <div class="price-row" *ngIf="promoApplied">
+              <span>Discount</span>
+              <span>-${{ bookingSummary.discount }}</span>
+            </div>
+            <div class="price-row total">
+              <span>Total</span>
+              <span>${{ bookingSummary.total }}</span>
+            </div>
+          </div>
+
+          <div class="promo-code">
+            <h3>Promo Code</h3>
+            <div class="promo-input">
+              <input type="text" [(ngModel)]="promoCode" placeholder="Enter promo code">
+              <button (click)="applyPromoCode()">Apply</button>
+            </div>
+            <div class="promo-message" *ngIf="promoApplied">
+              Promo code applied successfully!
+            </div>
+            <div class="promo-error" *ngIf="promoError">
+              {{ promoError }}
+            </div>
+          </div>
+
+          <button
+            class="continue-btn"
+            [disabled]="!canContinue()"
+            (click)="continueToCheckout()"
+          >
+            Continue to Checkout
+          </button>
+        </div>
+
+        <div class="empty-summary" *ngIf="bookingSummary.selectedSeats.length === 0">
+          <p>Please select at least one seat to continue.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

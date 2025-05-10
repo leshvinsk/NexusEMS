@@ -1,0 +1,186 @@
+<div class="organizer-container">
+    <div class="organizer-header">
+        <div class="header-left">
+            <h2>Event Organizer Dashboard</h2>
+        </div>
+        <div class="user-info">
+            <span>{{ currentUser?.username || 'Organizer' }}</span>
+            <i class="fas fa-chevron-right"></i>
+            <button class="logout-btn" (click)="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span *ngIf="!isSidebarCollapsed">Log Out</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" [class.collapsed]="isSidebarCollapsed">
+        <div class="sidebar-menu">
+            <a [routerLink]="['/organizer']" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span *ngIf="!isSidebarCollapsed">Events</span>
+            </a>
+            <a [routerLink]="['/event-analytics']" routerLinkActive="active" class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span *ngIf="!isSidebarCollapsed">Analytics</span>
+            </a>
+            <a [routerLink]="['/waitlist-management']" routerLinkActive="active" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span *ngIf="!isSidebarCollapsed">Waitlist Management</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content" [class.expanded]="isSidebarCollapsed">
+        <!-- Notification Messages -->
+        <div class="notification error" *ngIf="showError">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{ errorMessage }}</span>
+            <button class="close-btn" (click)="showError = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="notification success" *ngIf="showSuccess">
+            <i class="fas fa-check-circle"></i>
+            <span>{{ successMessage }}</span>
+            <button class="close-btn" (click)="showSuccess = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="ticket-section">
+            <h2>Ticket Types</h2>
+            
+            <!-- Add New Ticket Form -->
+            <div class="ticket-form">
+                <h3>Add New Ticket Type</h3>
+                <div class="ticket-limits">
+                    <p>Ticket Types: <span [class.limit-reached]="ticketTypes.length >= 6">{{ticketTypes.length}}</span> / 6</p>
+                </div>
+                <div class="form-group">
+                    <label for="ticketName">Ticket Name</label>
+                    <input type="text" id="ticketName" [(ngModel)]="newTicket.name" placeholder="e.g., VIP Pass">
+                </div>
+                <div class="form-group">
+                    <label for="ticketPrice">Price</label>
+                    <input type="number" id="ticketPrice" [(ngModel)]="newTicket.price" placeholder="Enter price" min="0" step="0.01" onkeypress="return event.charCode >= 48 && event.charCode <= 57 || event.charCode === 46">
+                    <small class="form-text text-muted">You can set the price to 0 for free tickets.</small>
+                </div>
+
+                
+                <button class="add-ticket-btn" (click)="addTicketType()" [disabled]="ticketTypes.length >= 6">Add Ticket Type</button>
+            </div>
+
+            <!-- Discount Section -->
+            <div class="discount-section" [class.disabled-section]="ticketTypes.length === 0">
+                <h3>Add New Discount</h3>
+                <div *ngIf="ticketTypes.length === 0" class="notification error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>You must add at least one ticket type before creating discounts.</span>
+                </div>
+                <div class="form-group">
+                    <label for="discountName">Discount Name</label>
+                    <input type="text" id="discountName" [(ngModel)]="newDiscount.name" 
+                           placeholder="e.g., Early Bird Discount"
+                           [disabled]="ticketTypes.length === 0">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="discountPercentage">Discount Percentage</label>
+                        <input type="number" id="discountPercentage" [(ngModel)]="newDiscount.percentage" 
+                               placeholder="Enter percentage" min="0" max="100"
+                               [disabled]="ticketTypes.length === 0">
+                    </div>
+                    <div class="form-group">
+                        <label>Apply to Ticket Types</label>
+                        <div class="dropdown-select" [class.disabled]="ticketTypes.length === 0">
+                            <div class="dropdown-header" (click)="ticketTypes.length > 0 && toggleDropdown()">
+                                <span *ngIf="selectedTicketTypes.length === 0">All Tickets</span>
+                                <span *ngIf="selectedTicketTypes.length === 1">{{ getTicketTypeName(selectedTicketTypes[0]) }}</span>
+                                <span *ngIf="selectedTicketTypes.length > 1">{{ selectedTicketTypes.length }} ticket types selected</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="dropdown-menu" [class.show]="isDropdownOpen && ticketTypes.length > 0">
+                                <div *ngFor="let ticket of ticketTypes" class="checkbox-item">
+                                    <input type="checkbox"
+                                           [id]="'ticket-' + ticket.id"
+                                           [value]="ticket.id"
+                                           (change)="toggleTicketSelection(ticket.id)"
+                                           [checked]="isTicketSelected(ticket.id)">
+                                    <label [for]="'ticket-' + ticket.id">{{ticket.name}}</label>
+                                </div>
+                                <div class="dropdown-actions">
+                                    <button type="button" class="btn-link" (click)="selectAllTickets()">Select All</button>
+                                    <button type="button" class="btn-link" (click)="clearTicketSelection()">Clear All</button>
+                                </div>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">
+                            Select multiple ticket types. Leave all unchecked to apply to all tickets.
+                        </small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="expiryDate">Expiry Date</label>
+                    <input type="datetime-local" id="expiryDate"
+                           [(ngModel)]="newDiscount.expiry_date"
+                           [min]="getMinExpiryDate() | date:'yyyy-MM-ddTHH:mm'"
+                           [max]="getOneDayBeforeEvent() | date:'yyyy-MM-ddTHH:mm'"
+                           [disabled]="ticketTypes.length === 0">
+                    <small class="form-text text-muted" *ngIf="eventData?.start_date_time">
+                        Must be after today and before {{ getOneDayBeforeEvent() | date:'medium' }} (one day before event starts)
+                    </small>
+                </div>
+                <button class="add-ticket-btn" (click)="addDiscount()" [disabled]="ticketTypes.length === 0">
+                    Add Discount
+                </button>
+            </div>
+
+            <!-- List of Ticket Types -->
+            <div class="ticket-list">
+                <h3>Current Ticket Types</h3>
+                <div class="ticket-grid">
+                    <div *ngFor="let ticket of ticketTypes" class="ticket-card">
+                        <div class="ticket-header">
+                            <h4>{{ticket.name}}</h4>
+                        </div>
+                        <div class="ticket-details">
+                            <p class="price">${{ticket.price}}</p>
+                        </div>
+                        <div class="discounts-section" *ngIf="getDiscountsForTicket(ticket.id).length > 0">
+                            <h5>Active Discounts</h5>
+                            <div class="discount-list">
+                                <div *ngFor="let discount of getDiscountsForTicket(ticket.id)" class="discount-item">
+                                    <div class="discount-info">
+                                        <div class="discount-name">{{discount.name}}</div>
+                                        <div class="discount-percentage">{{discount.percentage}}% OFF</div>
+                                        <div class="discount-dates">
+                                            Expires: {{discount.expiry_date | date:'short'}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="proceed-btn" (click)="proceedToSeatSetup()" [disabled]="ticketTypes.length === 0">
+                    <i class="fas fa-arrow-right"></i> Proceed to Seat Setup
+                </button>
+            </div>
+
+            <!-- Debug Information -->
+            <div class="debug-info" *ngIf="eventData">
+                <h4>Event Information</h4>
+                <p><strong>Event ID:</strong> {{eventData.pk_event_id}}</p>
+                <p><strong>Event Name:</strong> {{eventData.event_name}}</p>
+                <p><strong>Ticket Types:</strong> {{eventData.ticketTypes?.length || 0}}</p>
+                <p><strong>Discounts:</strong> {{eventData.discounts?.length || 0}}</p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,206 @@
+<div class="organizer-container">
+    <div class="organizer-header">
+        <div class="header-left">
+            <h2>Event Organizer Dashboard</h2>
+        </div>
+        <div class="user-info">
+            <span>{{ currentUser?.username || 'Organizer' }}</span>
+            <i class="fas fa-chevron-right"></i>
+            <button class="logout-btn" (click)="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span *ngIf="!isSidebarCollapsed">Log Out</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" [class.collapsed]="isSidebarCollapsed">
+        <div class="sidebar-menu">
+            <a [routerLink]="['/organizer']" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="menu-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span *ngIf="!isSidebarCollapsed">Events</span>
+            </a>
+            <a [routerLink]="['/event-analytics']" routerLinkActive="active" class="menu-item">
+                <i class="fas fa-chart-line"></i>
+                <span *ngIf="!isSidebarCollapsed">Analytics</span>
+            </a>
+            <a [routerLink]="['/attendee-list']" routerLinkActive="active" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span *ngIf="!isSidebarCollapsed">Attendees</span>
+            </a>
+            <a [routerLink]="['/waitlist-management']" routerLinkActive="active" class="menu-item">
+                <i class="fas fa-list"></i>
+                <span *ngIf="!isSidebarCollapsed">Waitlist Management</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" [class.expanded]="isSidebarCollapsed">
+        <!-- Page Title -->
+        <h1 class="page-title">Event Manager Dashboard</h1>
+        
+        <!-- Notification Messages -->
+        <div class="notification error" *ngIf="showError">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{ errorMessage }}</span>
+            <button class="close-btn" (click)="showError = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="notification success" *ngIf="showSuccess">
+            <i class="fas fa-check-circle"></i>
+            <span>{{ successMessage }}</span>
+            <button class="close-btn" (click)="showSuccess = false">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Confirmation Dialog -->
+        <div class="confirmation-dialog-overlay" *ngIf="showConfirmDialog">
+            <div class="confirmation-dialog">
+                <h3>{{ confirmDialogTitle }}</h3>
+                <p>{{ confirmDialogMessage }}</p>
+                <div class="dialog-buttons">
+                    <button class="cancel-btn" (click)="onConfirmDialogResponse(false)">Cancel</button>
+                    <button class="confirm-btn" (click)="onConfirmDialogResponse(true)">Confirm</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="event-section">
+                <!-- Create Event Form -->
+                <div class="event-form">
+                    <h2>Create New Event</h2>
+                    <form (ngSubmit)="onSubmit(eventForm)" #eventForm="ngForm">
+                        <div class="form-group">
+                            <label for="event_name">Event Name</label>
+                            <input type="text" id="event_name" name="event_name" [(ngModel)]="newEvent.event_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="event_description">Event Description</label>
+                            <textarea id="event_description" name="event_description" [(ngModel)]="newEvent.event_description" required rows="4"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="event_date">Event Date</label>
+                                <input type="date" 
+                                       id="event_date" 
+                                       name="event_date" 
+                                       [(ngModel)]="newEvent.event_date" 
+                                       [min]="getMinDate()"
+                                       required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="start_time">Start Time</label>
+                                <input type="time" 
+                                       id="start_time" 
+                                       name="start_time" 
+                                       [(ngModel)]="newEvent.start_time" 
+                                       min="09:00"
+                                       max="21:00"
+                                       required>
+                            </div>
+                            <div class="form-group">
+                                <label for="end_time">End Time</label>
+                                <input type="time" 
+                                       id="end_time" 
+                                       name="end_time" 
+                                       [(ngModel)]="newEvent.end_time" 
+                                       min="09:00"
+                                       max="21:00"
+                                       required>
+                            </div>
+                        </div>
+
+                        <div class="form-column">
+                            <div class="form-group">
+                              <h2>File Upload</h2>
+                              <input type="file" 
+                                  id="eventImage" 
+                                  name="eventImage" 
+                                  class="form-control"
+                                  accept="image/*"
+                                  multiple
+                                  (change)="onFileSelected($event)">
+                            </div>
+                      
+                            <div class="image-preview-container">
+                      
+                              <!-- Image Previews -->
+                              <div class="image-preview-list">
+                                <div class="image-preview-item" *ngFor="let file of selectedFiles">
+                                  <img [src]="getBase64Image(file)" alt="Event image preview">
+                                </div>
+                              </div>
+                      
+                              <div class="empty-state" *ngIf="selectedFiles.length === 0">
+                                <p>No images uploaded yet</p>
+                                <small>Images will appear here after upload</small>
+                              </div>
+                      
+                            </div>
+                      
+                          </div>
+                      
+                            <small class="form-text text-muted">
+                              Upload up to 5 images (max 5MB each). Accepted formats: JPG, PNG, GIF
+                            </small>
+                        
+                        
+                        <button type="submit" class="submit-btn" [disabled]="isLoading">
+                            <span *ngIf="!isLoading">Create Event</span>
+                            <span *ngIf="isLoading">
+                                <i class="fas fa-spinner fa-spin"></i> Processing...
+                            </span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Existing Events -->
+                <div class="existing-events">
+                    <h2>Your Events</h2>
+                    <div class="event-list" *ngIf="!isLoading && events.length > 0">
+                        <div class="event-card" *ngFor="let event of events">
+                            <div class="event-info">
+                                <p class="event-id"><strong>ID:</strong> {{event.pk_event_id}}</p>
+                                <p class="event-name"><strong>Name: </strong>{{event.event_name}}</p>
+                                <p class="event-date"><i class="fas fa-calendar-alt"></i> {{extractDate(event.start_date_time)}}</p>
+                                <p class="event-date"><i class="fas fa-clock"></i> {{extractTime(event.start_date_time)}} - {{extractTime(event.end_date_time)}}</p>
+                                <p class="event-description">{{event.description}}</p>
+                                <div class="image-preview-item" *ngFor="let file of event.files">
+                                    <img [src] = "getBase64Image(file)" alt="Event image preview">
+                                </div>
+                            </div>
+                            <div class="event-actions">
+                                <button class="edit-btn" (click)="editEvent(event)" title="Edit event">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                                <button class="delete-btn" (click)="deleteEvent(event)" title="Delete event">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button class="waitlist-btn" [routerLink]="['/waitlist-management', event.pk_event_id]" title="Manage waitlist">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                                <button class="attendees-btn" [routerLink]="['/attendee-list', event.pk_event_id]" title="View attendees">
+                                    <i class="fas fa-users"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="loading-message" *ngIf="isLoading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading events...
+                    </div>
+                    <div class="no-data-message" *ngIf="!isLoading && events.length === 0">
+                        <p>You haven't created any events yet.</p>
+                        <p>Use the form to create your first event.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
