@@ -163,9 +163,9 @@
                                     </div>
                                     
                                     <!-- Annotations for each segment -->
-                                    <div *ngFor="let label of analyticsData?.labels || []; let i = index" 
+                                    <div *ngFor="let label of analyticsData.labels || []; let i = index" 
                                         class="pie-annotation"
-                                        [style.--segment-angle]="(i + 0.5) * (360 / (analyticsData?.labels?.length || 1)) + 'deg'"
+                                        [style.--segment-angle]="(i + 0.5) * (360 / (analyticsData.labels.length || 1)) + 'deg'"
                                         [id]="'pie-segment-' + i"
                                         (mouseenter)="highlightSegment(i)" 
                                         (mouseleave)="unhighlightSegment()">
@@ -180,7 +180,7 @@
                                     <div class="chart-center">
                                         <div class="center-content">
                                             <div class="total-count">
-                                                {{analyticsData?.['attendancePercentage'] || 0}}%
+                                                {{analyticsData['attendancePercentage'] || 0}}%
                                             </div>
                                             <div class="total-label">
                                                 Seat Occupancy
@@ -193,11 +193,11 @@
                                 <div class="utilization-summary">
                                     <div class="summary-item">
                                         <div class="summary-label">Total Attendees:</div>
-                                        <div class="summary-value">{{analyticsData?.['totalAttendees'] || 0}}</div>
+                                        <div class="summary-value">{{analyticsData['totalAttendees'] || 0}}</div>
                                     </div>
                                     <div class="summary-item">
                                         <div class="summary-label">Seat Occupancy: </div>
-                                        <div class="summary-value">{{analyticsData?.['attendancePercentage'] || 0}}%</div>
+                                        <div class="summary-value">{{analyticsData['attendancePercentage'] || 0}}%</div>
                                     </div>
                                 </div>
                             </div>
@@ -248,7 +248,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr *ngFor="let label of analyticsData?.labels || []; let i = index"
+                                    <tr *ngFor="let label of analyticsData.labels || []; let i = index"
                                         [id]="'table-row-' + i"
                                         (mouseenter)="highlightSegment(i)" 
                                         (mouseleave)="unhighlightSegment()">
@@ -256,7 +256,7 @@
                                             <div class="color-indicator" [style.background-color]="getSliceColor(i)"></div>
                                         </td>
                                         <td>{{ label }}</td>
-                                        <td>$ {{ analyticsData.values?.[i]?.toFixed(2) || '0.00' }}</td>
+                                        <td>$ {{ analyticsData.values[i].toFixed(2) || '0.00' }}</td>
                                         <td>{{ formatDateDisplay(events[i].start_date_time) }}</td>
                                     </tr>
                                 </tbody>
