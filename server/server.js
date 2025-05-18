@@ -12,11 +12,9 @@ const Discount = require('./models/discount');
 const { getAdminData } = require('./utils/adminLoader');
 
 // Just log minimal server info
-console.log('Starting NexusEMS server...');
-console.log('Environment check:');
-console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Set' : 'Not set');
-console.log('EMAIL_USER:', process.env.EMAIL_USER ? 'Set' : 'Not set');
-console.log('EMAIL_USER:', process.env.EMAIL_USER ? 'Set' : 'Not set');
+console.log('Starting NexusEMS Server...');
+console.log('Environment Check Complete..');
+console.log('Connecting to MongoDB Database');
 
 // Initialize Express app
 const app = express();
@@ -30,7 +28,7 @@ mongoose.connection.on('error', err => {
 });
 
 mongoose.connection.once('open', () => {
-    console.log('Connected to MongoDB');
+    console.log('MongoDB Connected Successfully');
 });
 
 // Initialize middleware
@@ -331,4 +329,4 @@ initializeAdmins();
 const PORT = process.env.PORT || 5001;
 
 // Start server
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log('Server Running at Port 5001'));

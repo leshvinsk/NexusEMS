@@ -14,20 +14,12 @@ router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    console.log(`Login attempt for username: ${username}`);
-    console.log(`Password provided: ${password.substring(0, 3)}${'*'.repeat(password.length - 3)}`);
-    
     // First check if user exists in admin collection
     let admin = await Admin.findOne({ username });
 
     if (admin) {
-      console.log(`Admin found: ${admin.username}, Email: ${admin.email}`);
-      console.log(`Admin contact_no: ${admin.contact_no}`);
-      console.log(`Stored password hash: ${admin.password.substring(0, 15)}...`);
-      
       // Check password
       const isMatch = await admin.comparePassword(password);
-      console.log(`Password match: ${isMatch}`);
 
       if (!isMatch) {
         return res.status(400).json({ error: 'Invalid credentials' });
@@ -49,7 +41,6 @@ router.post('/login', async (req, res) => {
         { expiresIn: '1h' },
         (err, token) => {
           if (err) throw err;
-          console.log(`Login successful for admin: ${admin.username}`);
           res.json({ 
             token,
             user: {
@@ -66,23 +57,16 @@ router.post('/login', async (req, res) => {
         }
       );
     } else {
-      console.log(`Admin not found: ${username}, checking organizer collection...`);
-      
       // Check if user exists in organizer collection
       const Organizer = require('../models/Organizer');
       const organizer = await Organizer.findOne({ username });
       
       if (!organizer) {
-        console.log(`Organizer not found: ${username}`);
         return res.status(400).json({ error: 'Invalid credentials' });
       }
       
-      console.log(`Organizer found: ${organizer.username}, Email: ${organizer.email}`);
-      console.log(`Stored password hash: ${organizer.password.substring(0, 15)}...`);
-      
       // Check password
       const isMatch = await organizer.comparePassword(password);
-      console.log(`Password match: ${isMatch}`);
 
       if (!isMatch) {
         return res.status(400).json({ error: 'Invalid credentials' });
@@ -104,7 +88,6 @@ router.post('/login', async (req, res) => {
         { expiresIn: '1h' },
         (err, token) => {
           if (err) throw err;
-          console.log(`Login successful for organizer: ${organizer.username}`);
           res.json({ 
             token,
             user: {
@@ -123,7 +106,6 @@ router.post('/login', async (req, res) => {
       );
     }
   } catch (err) {
-    console.error('Login error:', err.message);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -136,7 +118,6 @@ router.get('/user', auth, async (req, res) => {
     const admin = await Admin.findById(req.user.id).select('-password');
     res.json(admin);
   } catch (err) {
-    console.error(err.message);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -155,14 +136,10 @@ router.post('/reset-password', async (req, res) => {
   const { email } = req.body;
 
   try {
-    console.log(`Password reset request for email: ${email}`);
-    
     // Check if admin exists with this email
     const admin = await Admin.findOne({ email });
 
     if (admin) {
-      console.log(`Admin found: ${admin.username}`);
-
       // Generate a random temporary password
       const tempPassword = generateRandomPassword(10);
       
@@ -174,39 +151,32 @@ router.post('/reset-password', async (req, res) => {
       );
 
       if (!emailSent) {
-        console.log('Email sending failed, not updating password');
         return res.status(500).json({ error: 'Failed to send password reset email. Please contact system administrator.' });
       }
 
       // Only update the password in the database if email was sent successfully
-      console.log('Email sent successfully, updating password in database');
       
       // Update the admin's password and set temporary flag
       admin.password = tempPassword;
       admin.isTemporaryPassword = true;
       await admin.save();
       
-      console.log('Password updated successfully for admin:', admin.username);
       return res.json({ 
         message: 'Password reset successful. Please check your email for the temporary password.'
       });
     } 
     else {
       // If not found in admin collection, check organizer collection
-      console.log(`Admin not found with email: ${email}, checking organizer collection...`);
       
-      // Import Organizer model
+      // Check if organizer exists with this email
       const Organizer = require('../models/Organizer');
       
       // Check if organizer exists with this email
       const organizer = await Organizer.findOne({ email });
       
       if (!organizer) {
-        console.log(`Organizer not found with email: ${email}`);
         return res.status(404).json({ error: 'Account not found with this email address' });
       }
-      
-      console.log(`Organizer found: ${organizer.username}`);
       
       // Generate a random temporary password
       const tempPassword = generateRandomPassword(10);
@@ -220,25 +190,21 @@ router.post('/reset-password', async (req, res) => {
       );
       
       if (!emailSent) {
-        console.log('Email sending failed, not updating password');
         return res.status(500).json({ error: 'Failed to send password reset email. Please contact system administrator.' });
       }
       
       // Only update the password in the database if email was sent successfully
-      console.log('Email sent successfully, updating password in database');
       
       // Update the organizer's password and set temporary flag
       organizer.password = tempPassword;
       organizer.isTemporaryPassword = true;
       await organizer.save();
       
-      console.log('Password updated successfully for organizer:', organizer.username);
       return res.json({
         message: 'Password reset successful. Please check your email for the temporary password.'
       });
     }
   } catch (err) {
-    console.error('Password reset error:', err.message);
     res.status(500).json({ error: 'Server error during password reset process' });
   }
 });
@@ -250,16 +216,12 @@ router.post('/change-password', auth, async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
   try {
-    console.log('Password change request for user ID:', req.user.id);
-    console.log('User role from token:', req.user.role);
-    
     // Check user role and find in appropriate collection
     if (req.user.role === 'Administrator') {
       // Find admin in database
       const admin = await Admin.findById(req.user.id);
       
       if (!admin) {
-        console.log('Admin not found with ID:', req.user.id);
         return res.status(404).json({ error: 'User not found' });
       }
       
@@ -274,8 +236,7 @@ router.post('/change-password', auth, async (req, res) => {
       admin.isTemporaryPassword = false;
       await admin.save();
       
-      console.log('Admin password changed successfully');
-      res.json({ message: 'Password changed successfully' });
+      return res.json({ message: 'Password changed successfully' });
     } 
     else if (req.user.role === 'Organizer') {
       // Import Organizer model
@@ -285,7 +246,6 @@ router.post('/change-password', auth, async (req, res) => {
       const organizer = await Organizer.findById(req.user.id);
       
       if (!organizer) {
-        console.log('Organizer not found with ID:', req.user.id);
         return res.status(404).json({ error: 'User not found' });
       }
       
@@ -300,15 +260,12 @@ router.post('/change-password', auth, async (req, res) => {
       organizer.isTemporaryPassword = false;
       await organizer.save();
       
-      console.log('Organizer password changed successfully');
-      res.json({ message: 'Password changed successfully' });
+      return res.json({ message: 'Password changed successfully' });
     }
     else {
-      console.log('Unknown user role:', req.user.role);
       return res.status(403).json({ error: 'Invalid user role' });
     }
   } catch (err) {
-    console.error('Password change error:', err.message);
     res.status(500).json({ error: 'Server error during password change' });
   }
 });
@@ -320,8 +277,6 @@ router.post('/send-verification', async (req, res) => {
   const { email, code, newEmail } = req.body;
 
   try {
-    console.log(`Verification code request for email: ${email}, new email: ${newEmail}`);
-    
     // Send email with verification code
     const nodemailer = require('nodemailer');
     
@@ -373,13 +328,11 @@ router.post('/send-verification', async (req, res) => {
     
     // Send email
     const info = await transporter.sendMail(mailOptions);
-    console.log('Verification email sent:', info.messageId);
     
     return res.json({ 
       message: 'Verification code sent successfully.'
     });
   } catch (err) {
-    console.error('Error sending verification code:', err);
     res.status(500).json({ error: 'Failed to send verification code. Please try again.' });
   }
 });
@@ -391,8 +344,6 @@ router.post('/update-email', async (req, res) => {
   const { userId, newEmail } = req.body;
 
   try {
-    console.log(`Updating email for user ID: ${userId} to: ${newEmail}`);
-    
     if (!userId) {
       return res.status(400).json({ error: 'User ID is required' });
     }
@@ -406,7 +357,6 @@ router.post('/update-email', async (req, res) => {
     try {
       admin = await Admin.findById(userId);
     } catch (idError) {
-      console.error('Error finding admin by ID:', idError);
       return res.status(400).json({ error: 'Invalid user ID format' });
     }
 
@@ -415,7 +365,6 @@ router.post('/update-email', async (req, res) => {
       admin.email = newEmail;
       await admin.save();
       
-      console.log(`Email updated successfully for admin: ${admin.username}`);
       return res.status(200).json({ 
         message: 'Email updated successfully.'
       });
@@ -427,7 +376,6 @@ router.post('/update-email', async (req, res) => {
       try {
         organizer = await Organizer.findById(userId);
       } catch (idError) {
-        console.error('Error finding organizer by ID:', idError);
         return res.status(400).json({ error: 'Invalid user ID format' });
       }
       
@@ -439,14 +387,12 @@ router.post('/update-email', async (req, res) => {
       organizer.email = newEmail;
       await organizer.save();
       
-      console.log(`Email updated successfully for organizer: ${organizer.username}`);
       return res.status(200).json({ 
         message: 'Email updated successfully.'
       });
     }
   } catch (err) {
-    console.error('Error updating email:', err);
-    return res.status(500).json({ error: 'Failed to update email. Please try again.' });
+    res.status(500).json({ error: 'Failed to update email. Please try again.' });
   }
 });
 
@@ -457,8 +403,6 @@ router.post('/update-phone', auth, async (req, res) => {
   const { userId, newPhone } = req.body;
 
   try {
-    console.log(`Updating phone for user: ${userId} to: ${newPhone}`);
-    
     // Check if user exists in admin collection
     let admin = await Admin.findById(userId);
 
@@ -467,7 +411,6 @@ router.post('/update-phone', auth, async (req, res) => {
       admin.phone = newPhone;
       await admin.save();
       
-      console.log(`Phone updated successfully for admin: ${admin.username}`);
       return res.json({ 
         message: 'Phone number updated successfully.'
       });
@@ -484,13 +427,11 @@ router.post('/update-phone', auth, async (req, res) => {
       organizer.phone = newPhone;
       await organizer.save();
       
-      console.log(`Phone updated successfully for organizer: ${organizer.username}`);
       return res.json({ 
         message: 'Phone number updated successfully.'
       });
     }
   } catch (err) {
-    console.error('Error updating phone number:', err);
     res.status(500).json({ error: 'Failed to update phone number. Please try again.' });
   }
 });
@@ -502,8 +443,6 @@ router.post('/check-email', async (req, res) => {
   const { email, userId, userType } = req.body;
 
   try {
-    console.log(`Checking email uniqueness for: ${email}, userId: ${userId}, userType: ${userType}`);
-    
     // Check admin collection
     const adminExists = await Admin.findOne({ 
       email, 
@@ -511,7 +450,6 @@ router.post('/check-email', async (req, res) => {
     });
     
     if (adminExists) {
-      console.log(`Email ${email} already exists in admin collection`);
       return res.status(409).json({ 
         message: 'This email is already registered to an administrator account.'
       });
@@ -525,20 +463,17 @@ router.post('/check-email', async (req, res) => {
     });
     
     if (organizerExists) {
-      console.log(`Email ${email} already exists in organizer collection`);
       return res.status(409).json({ 
         message: 'This email is already registered to an organizer account.'
       });
     }
     
     // Email is unique
-    console.log(`Email ${email} is unique and available`);
     return res.status(200).json({ 
       message: 'Email is available', 
       isUnique: true 
     });
   } catch (err) {
-    console.error('Error checking email uniqueness:', err);
     res.status(500).json({ error: 'Server error checking email uniqueness' });
   }
 });
@@ -550,8 +485,6 @@ router.post('/update-contact-no', async (req, res) => {
   const { userId, newContactNo } = req.body;
 
   try {
-    console.log(`Updating contact_no for user: ${userId} to: ${newContactNo}`);
-    
     // Check if user exists in admin collection
     let admin = await Admin.findById(userId);
 
@@ -560,7 +493,6 @@ router.post('/update-contact-no', async (req, res) => {
       admin.contact_no = newContactNo;
       await admin.save();
       
-      console.log(`Contact number updated successfully for admin: ${admin.username}`);
       return res.json({ 
         message: 'Contact number updated successfully.'
       });
@@ -577,13 +509,11 @@ router.post('/update-contact-no', async (req, res) => {
       organizer.phone = newContactNo; // Organizers use 'phone' field
       await organizer.save();
       
-      console.log(`Contact number updated successfully for organizer: ${organizer.username}`);
       return res.json({ 
         message: 'Contact number updated successfully.'
       });
     }
   } catch (err) {
-    console.error('Error updating contact number:', err);
     res.status(500).json({ error: 'Failed to update contact number. Please try again.' });
   }
 });
@@ -595,8 +525,6 @@ router.get('/user-data/:id', async (req, res) => {
   const userId = req.params.id;
   
   try {
-    console.log(`Fetching user data for ID: ${userId}`);
-    
     // Check admin collection
     let admin = await Admin.findById(userId);
     
@@ -626,7 +554,6 @@ router.get('/user-data/:id', async (req, res) => {
     
     return res.status(404).json({ error: 'User not found' });
   } catch (err) {
-    console.error('Error fetching user data:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -638,8 +565,6 @@ router.post('/check-contact', async (req, res) => {
   const { contactNo, userId, userType } = req.body;
 
   try {
-    console.log(`Checking contact number uniqueness for: ${contactNo}, userId: ${userId}, userType: ${userType}`);
-    
     // Check admin collection for contact_no
     const adminExists = await Admin.findOne({ 
       contact_no: contactNo, 
@@ -647,7 +572,6 @@ router.post('/check-contact', async (req, res) => {
     });
     
     if (adminExists) {
-      console.log(`Contact number ${contactNo} already exists in admin collection`);
       return res.status(409).json({ 
         message: 'This contact number is already registered to an administrator account.'
       });
@@ -661,20 +585,17 @@ router.post('/check-contact', async (req, res) => {
     });
     
     if (organizerExists) {
-      console.log(`Contact number ${contactNo} already exists in organizer collection`);
       return res.status(409).json({ 
         message: 'This contact number is already registered to an organizer account.'
       });
     }
     
     // Contact number is unique
-    console.log(`Contact number ${contactNo} is unique and available`);
     return res.status(200).json({ 
       message: 'Contact number is available', 
       isUnique: true 
     });
   } catch (err) {
-    console.error('Error checking contact number uniqueness:', err);
     res.status(500).json({ error: 'Server error checking contact number uniqueness' });
   }
 });
@@ -686,8 +607,6 @@ router.post('/send-contact-verification', async (req, res) => {
   const { email, code, newContactNo } = req.body;
 
   try {
-    console.log(`Contact verification code request for email: ${email}, new contact: ${newContactNo}`);
-    
     // Send email with verification code
     const nodemailer = require('nodemailer');
     
@@ -739,13 +658,11 @@ router.post('/send-contact-verification', async (req, res) => {
     
     // Send email
     const info = await transporter.sendMail(mailOptions);
-    console.log('Contact verification email sent:', info.messageId);
     
     return res.json({ 
       message: 'Verification code sent successfully.'
     });
   } catch (err) {
-    console.error('Error sending contact verification code:', err);
     res.status(500).json({ error: 'Failed to send verification code. Please try again.' });
   }
 });
