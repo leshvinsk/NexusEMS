@@ -45,6 +45,10 @@ app.use('/api/tickets', require('./routes/tickets'));
 app.use('/api/discounts', require('./routes/discounts'));
 app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/waitlist', require('./routes/waitlist'));
+app.use('/api/payments', require('./routes/payments'));
+
+// Special middleware for Stripe webhook endpoint
+app.use('/api/payments/webhook', express.raw({type: 'application/json'}));
 
 // Multer setup for file uploads
 const storage = multer.memoryStorage(); // Store files in memory as Buffer

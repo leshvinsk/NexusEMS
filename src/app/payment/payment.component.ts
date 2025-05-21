@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { loadStripe, Stripe, StripeElements, StripeCardElement, StripeCardElementChangeEvent } from '@stripe/stripe-js';
 
 @Component({
   selector: 'app-payment',
@@ -10,7 +11,7 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './payment.component.html',
   styleUrls: ['./payment.component.css']
 })
-export class PaymentComponent implements OnInit {
+export class PaymentComponent implements OnInit, OnDestroy {
   paymentForm!: FormGroup;
   submitted = false;
   processing = false;
@@ -22,6 +23,15 @@ export class PaymentComponent implements OnInit {
   
   // API URL
   private API_URL = 'http://localhost:5001/api';
+  
+  // Stripe variables
+  private stripe: Stripe | null = null;
+  private elements: StripeElements | null = null;
+  private card: StripeCardElement | null = null;
+  cardError: string = '';
+  
+  // Stripe publishable key - replace with your actual key
+  private stripePublishableKey = 'pk_test_51RRFm04SIpmnAm7tI8NPjEOmmTu7M7SffNd8uoR5BZFn9DxtDeoYaVbHul1IkzaZa3QUrM8QymLys3Y7B2SKsaLN00Pf1Jm9Ew';
 
   // Error messages
   validationMessages = {
@@ -32,23 +42,10 @@ export class PaymentComponent implements OnInit {
     email: [
       { type: 'required', message: 'Email is required' },
       { type: 'email', message: 'Please enter a valid email address' }
-    ],
-    cardNumber: [
-      { type: 'required', message: 'Card number is required' },
-      { type: 'pattern', message: 'Please enter a valid 16-digit card number' },
-      { type: 'minlength', message: 'Card number must be 16 digits' },
-      { type: 'maxlength', message: 'Card number must be 16 digits' }
-    ],
-    expiryDate: [
-      { type: 'required', message: 'Expiry date is required' },
-      { type: 'pattern', message: 'Please use MM/YY format (e.g., 12/25)' },
-      { type: 'pastDate', message: 'Card expiration date cannot be in the past' }
-    ],
-    cvv: [
-      { type: 'required', message: 'CVV is required' },
-      { type: 'pattern', message: 'CVV must be 3 or 4 digits' }
     ]
   };
+
+  @ViewChild('cardElement') cardElement!: ElementRef;
 
   constructor(
     private router: Router, 
@@ -79,6 +76,76 @@ export class PaymentComponent implements OnInit {
         }
       }
     });
+    
+    // Initialize Stripe
+    this.initStripe();
+  }
+  
+  ngOnDestroy(): void {
+    // Clean up Stripe elements if needed
+    if (this.card) {
+      this.card.destroy();
+    }
+  }
+  
+  // Initialize Stripe
+  async initStripe(): Promise<void> {
+    try {
+      this.stripe = await loadStripe(this.stripePublishableKey);
+      
+      if (!this.stripe) {
+        console.error('Failed to load Stripe');
+        return;
+      }
+      
+      // Wait for the DOM to be ready
+      setTimeout(() => {
+        if (this.cardElement && this.cardElement.nativeElement) {
+          this.setupStripeElements();
+        } else {
+          console.error('Card element not found in the DOM');
+        }
+      }, 100);
+    } catch (error) {
+      console.error('Error initializing Stripe:', error);
+    }
+  }
+  
+  // Setup Stripe Elements
+  setupStripeElements(): void {
+    if (!this.stripe) {
+      console.error('Stripe not initialized');
+      return;
+    }
+    
+    this.elements = this.stripe.elements();
+    
+    // Create card element
+    const cardElementOptions = {
+      style: {
+        base: {
+          color: '#32325d',
+          fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+          fontSmoothing: 'antialiased',
+          fontSize: '16px',
+          '::placeholder': {
+            color: '#aab7c4'
+          }
+        },
+        invalid: {
+          color: '#fa755a',
+          iconColor: '#fa755a'
+        }
+      }
+    };
+    
+    this.card = this.elements.create('card', cardElementOptions);
+    this.card.mount(this.cardElement.nativeElement);
+    
+    // Add event listener for changes
+    this.card.on('change', (event: StripeCardElementChangeEvent) => {
+      this.cardError = event.error ? event.error.message : '';
+    });
   }
   
   // Load booking data from the server
@@ -102,160 +169,15 @@ export class PaymentComponent implements OnInit {
     });
   }
 
-  // Custom validator for expiry date
-  expiryDateValidator(): any {
-    return (control: any) => {
-      if (!control.value) {
-        return null;
-      }
-
-      // Check if the format is valid
-      if (!control.value.match(/^(0[1-9]|1[0-2])\/([0-9]{2})$/)) {
-        return null; // Let the pattern validator handle format errors
-      }
-
-      const [month, year] = control.value.split('/');
-      const expiryDate = new Date(2000 + parseInt(year), parseInt(month) - 1, 1);
-      const today = new Date();
-
-      // Set both dates to the first of the month to compare only month and year
-      today.setDate(1);
-
-      if (expiryDate < today) {
-        return { 'pastDate': true };
-      }
-
-      return null;
-    };
-  }
-
   createForm() {
     this.paymentForm = this.formBuilder.group({
       fullName: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
-      cardNumber: ['', [
-        Validators.required,
-        Validators.minLength(16),
-        Validators.maxLength(16),
-        Validators.pattern('^[0-9]{16}$')
-      ]],
-      expiryDate: ['', [
-        Validators.required,
-        Validators.pattern('^(0[1-9]|1[0-2])\\/([0-9]{2})$'),
-        this.expiryDateValidator()
-      ]],
-      cvv: ['', [
-        Validators.required,
-        Validators.pattern('^[0-9]{3,4}$')
-      ]]
+      email: ['', [Validators.required, Validators.email]]
     });
   }
 
   // Convenience getter for easy access to form fields
   get f() { return this.paymentForm.controls; }
-
-  // Format card number as user types (add spaces every 4 digits)
-  formatCardNumber(event: any) {
-    // Get current cursor position before formatting
-    const input = event.target;
-    const cursorPosition = input.selectionStart;
-    const inputValue = input.value;
-
-    // Count spaces before the cursor to adjust position later
-    const spacesBeforeCursor = (inputValue.substring(0, cursorPosition).match(/ /g) || []).length;
-
-    // Remove all non-digit characters
-    let trimmed = inputValue.replace(/\D/g, '');
-
-    // Limit to 16 digits
-    if (trimmed.length > 16) {
-      trimmed = trimmed.substring(0, 16);
-    }
-
-    // Add spaces every 4 characters
-    let formatted = '';
-    for (let i = 0; i < trimmed.length; i++) {
-      if (i > 0 && i % 4 === 0) {
-        formatted += ' ';
-      }
-      formatted += trimmed[i];
-    }
-
-    // Calculate new cursor position
-    // Count spaces that will be added before the cursor after formatting
-    const newSpacesBeforeCursor = Math.floor(Math.min(cursorPosition, trimmed.length) / 4);
-    let newCursorPosition = cursorPosition + (newSpacesBeforeCursor - spacesBeforeCursor);
-
-    // If we're at a position where a space was just added, move cursor one position forward
-    if (newCursorPosition > 0 && formatted.charAt(newCursorPosition - 1) === ' ') {
-      newCursorPosition++;
-    }
-
-    // Update the form control value (raw, without spaces)
-    this.paymentForm.get('cardNumber')?.setValue(trimmed, { emitEvent: false });
-
-    // Set the formatted value to the input
-    input.value = formatted;
-
-    // Restore cursor position
-    setTimeout(() => {
-      input.setSelectionRange(newCursorPosition, newCursorPosition);
-    }, 0);
-
-    // Trigger validation
-    this.paymentForm.get('cardNumber')?.updateValueAndValidity();
-  }
-
-  // Format expiry date as user types (add / after 2 digits)
-  formatExpiryDate(event: any) {
-    const input = event.target;
-    const cursorPosition = input.selectionStart;
-
-    // Remove all non-digit characters
-    let value = input.value.replace(/\D/g, '');
-
-    // Limit to 4 digits (MM/YY)
-    if (value.length > 4) {
-      value = value.substring(0, 4);
-    }
-
-    let newCursorPosition = cursorPosition;
-    let formatted = value;
-
-    // Format as MM/YY
-    if (value.length > 2) {
-      // If month > 12, set it to 12
-      let month = parseInt(value.substring(0, 2));
-      if (month > 12) {
-        month = 12;
-        value = month.toString().padStart(2, '0') + value.substring(2);
-      }
-
-      formatted = value.substring(0, 2) + '/' + value.substring(2);
-
-      // Adjust cursor position if we're after the month part
-      if (cursorPosition > 2) {
-        // If the slash wasn't there before but will be added now
-        if (input.value.charAt(2) !== '/' && formatted.charAt(2) === '/') {
-          newCursorPosition++;
-        }
-      }
-    }
-
-    // Set the formatted value
-    input.value = formatted;
-
-    // Store the formatted value in the form control
-    this.paymentForm.get('expiryDate')?.setValue(formatted, { emitEvent: false });
-
-    // Restore cursor position
-    setTimeout(() => {
-      input.setSelectionRange(newCursorPosition, newCursorPosition);
-    }, 0);
-
-    // Trigger validation
-    this.paymentForm.get('expiryDate')?.updateValueAndValidity();
-  }
 
   onSubmit() {
     this.submitted = true;
@@ -267,16 +189,11 @@ export class PaymentComponent implements OnInit {
 
     this.processing = true;
 
-    // Get the card number input field
-    const cardNumberInput = document.getElementById('cardNumber') as HTMLInputElement;
-    const cardNumberValue = cardNumberInput ? cardNumberInput.value : '';
-    console.log('Card number input value:', cardNumberValue);
-
     // Get form values
     const customerName = this.paymentForm.get('fullName')?.value;
     const customerEmail = this.paymentForm.get('email')?.value;
     
-    // Update booking with customer information
+    // First update customer information
     if (this.bookingId) {
       this.http.put(`${this.API_URL}/bookings/${this.bookingId}/customer`, {
         customer_name: customerName,
@@ -284,103 +201,155 @@ export class PaymentComponent implements OnInit {
       }).subscribe({
         next: (response: any) => {
           console.log('Customer information updated:', response);
-          this.processPayment(cardNumberValue);
+          this.createPaymentIntent();
         },
         error: (error) => {
           console.error('Error updating customer information:', error);
           // Continue with payment processing anyway
-          this.processPayment(cardNumberValue);
+          this.createPaymentIntent();
         }
       });
     } else {
       // No booking ID, just process payment
-      this.processPayment(cardNumberValue);
+      this.createPaymentIntent();
     }
   }
   
-  // Process payment
-  processPayment(cardNumberValue: string): void {
-    // Generate a random payment ID
-    const paymentId = 'PAY-' + Date.now().toString();
+  // Create a payment intent on the server
+  createPaymentIntent(): void {
+    const amount = this.bookingData?.total || 0;
     
-    // Simulate payment processing
-    setTimeout(() => {
-      // Perform payment processing logic here
-      this.processing = false;
-
-      // For demonstration purposes, we'll simulate a payment failure
-      // if the card number ends with '0000'
-      if (cardNumberValue && cardNumberValue.endsWith('0000')) {
-        console.log('Payment failed, redirecting to booking-failed');
-        // Redirect to Booking Failed page
-        this.router.navigate(['/booking-failed']).then(
+    this.http.post(`${this.API_URL}/payments/create-payment-intent`, {
+      amount: amount * 100, // Convert to cents for Stripe
+      currency: 'usd',
+      booking_id: this.bookingId
+    }).subscribe({
+      next: (response: any) => {
+        if (response.clientSecret) {
+          this.confirmCardPayment(response.clientSecret);
+        } else {
+          this.handlePaymentError('Failed to create payment intent');
+        }
+      },
+      error: (error) => {
+        console.error('Error creating payment intent:', error);
+        this.handlePaymentError('Failed to create payment intent');
+      }
+    });
+  }
+  
+  // Confirm card payment with Stripe
+  async confirmCardPayment(clientSecret: string): Promise<void> {
+    if (!this.stripe || !this.card) {
+      this.handlePaymentError('Stripe not initialized');
+      return;
+    }
+    
+    try {
+      const result = await this.stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: this.card,
+          billing_details: {
+            name: this.paymentForm.get('fullName')?.value,
+            email: this.paymentForm.get('email')?.value
+          }
+        }
+      });
+      
+      if (result.error) {
+        // Show error to customer
+        this.handlePaymentError(result.error.message || 'Payment failed');
+      } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+        // Payment succeeded
+        this.handlePaymentSuccess(result.paymentIntent.id);
+      } else {
+        this.handlePaymentError('Payment status unknown');
+      }
+    } catch (error) {
+      console.error('Error confirming payment:', error);
+      this.handlePaymentError('An unexpected error occurred');
+    }
+  }
+  
+  // Handle payment error
+  handlePaymentError(errorMessage: string): void {
+    console.error('Payment error:', errorMessage);
+    this.processing = false;
+    this.cardError = errorMessage;
+    
+    // For demo purposes, you can simulate a payment failure with a specific email
+    if (this.paymentForm.get('email')?.value.includes('fail')) {
+      this.router.navigate(['/booking-failed']).then(
+        success => console.log('Navigation success:', success),
+        error => console.error('Navigation error:', error)
+      );
+    }
+  }
+  
+  // Handle successful payment
+  handlePaymentSuccess(paymentId: string): void {
+    console.log('Payment successful, updating booking status');
+    this.processing = false;
+    
+    // Update booking with payment information
+    if (this.bookingId) {
+      this.http.put(`${this.API_URL}/bookings/${this.bookingId}/payment`, {
+        payment_method: 'Stripe',
+        payment_id: paymentId
+      }).subscribe({
+        next: (response: any) => {
+          console.log('Payment information updated:', response);
+          // Redirect to Booking Confirmation page
+          this.router.navigate(['/booking-confirmation'], {
+            queryParams: { booking_id: this.bookingId }
+          }).then(
+            success => console.log('Navigation success:', success),
+            error => console.error('Navigation error:', error)
+          );
+        },
+        error: (error) => {
+          console.error('Error updating payment information:', error);
+          // Still redirect to confirmation page
+          this.router.navigate(['/booking-confirmation'], {
+            queryParams: { booking_id: this.bookingId }
+          }).then(
+            success => console.log('Navigation success:', success),
+            error => console.error('Navigation error:', error)
+          );
+        }
+      });
+    } else {
+      // No booking ID, just redirect to confirmation page with data from localStorage
+      const tempBooking = localStorage.getItem('tempBooking');
+      if (tempBooking) {
+        try {
+          const bookingData = JSON.parse(tempBooking);
+          console.log('Using booking data from localStorage:', bookingData);
+          
+          // Redirect to confirmation page with the booking ID from localStorage
+          this.router.navigate(['/booking-confirmation'], {
+            queryParams: { 
+              booking_id: bookingData.booking_id,
+              event_id: bookingData.event_id
+            }
+          }).then(
+            success => console.log('Navigation success:', success),
+            error => console.error('Navigation error:', error)
+          );
+        } catch (e) {
+          console.error('Error parsing booking data from localStorage:', e);
+          this.router.navigate(['/booking-confirmation']).then(
+            success => console.log('Navigation success:', success),
+            error => console.error('Navigation error:', error)
+          );
+        }
+      } else {
+        // No booking data in localStorage either
+        this.router.navigate(['/booking-confirmation']).then(
           success => console.log('Navigation success:', success),
           error => console.error('Navigation error:', error)
         );
-      } else {
-        console.log('Payment successful, updating booking status');
-        
-        // Update booking with payment information
-        if (this.bookingId) {
-          this.http.put(`${this.API_URL}/bookings/${this.bookingId}/payment`, {
-            payment_method: 'Credit Card',
-            payment_id: paymentId
-          }).subscribe({
-            next: (response: any) => {
-              console.log('Payment information updated:', response);
-              // Redirect to Booking Confirmation page
-              this.router.navigate(['/booking-confirmation'], {
-                queryParams: { booking_id: this.bookingId }
-              }).then(
-                success => console.log('Navigation success:', success),
-                error => console.error('Navigation error:', error)
-              );
-            },
-            error: (error) => {
-              console.error('Error updating payment information:', error);
-              // Still redirect to confirmation page
-              this.router.navigate(['/booking-confirmation'], {
-                queryParams: { booking_id: this.bookingId }
-              }).then(
-                success => console.log('Navigation success:', success),
-                error => console.error('Navigation error:', error)
-              );
-            }
-          });
-        } else {
-          // No booking ID, just redirect to confirmation page with data from localStorage
-          const tempBooking = localStorage.getItem('tempBooking');
-          if (tempBooking) {
-            try {
-              const bookingData = JSON.parse(tempBooking);
-              console.log('Using booking data from localStorage:', bookingData);
-              
-              // Redirect to confirmation page with the booking ID from localStorage
-              this.router.navigate(['/booking-confirmation'], {
-                queryParams: { 
-                  booking_id: bookingData.booking_id,
-                  event_id: bookingData.event_id
-                }
-              }).then(
-                success => console.log('Navigation success:', success),
-                error => console.error('Navigation error:', error)
-              );
-            } catch (e) {
-              console.error('Error parsing booking data from localStorage:', e);
-              this.router.navigate(['/booking-confirmation']).then(
-                success => console.log('Navigation success:', success),
-                error => console.error('Navigation error:', error)
-              );
-            }
-          } else {
-            // No booking data in localStorage either
-            this.router.navigate(['/booking-confirmation']).then(
-              success => console.log('Navigation success:', success),
-              error => console.error('Navigation error:', error)
-            );
-          }
-        }
       }
-    }, 1500);
+    }
   }
 }

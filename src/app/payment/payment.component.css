@@ -282,3 +282,21 @@ input:focus-visible {
 button:focus {
   animation: pulse 1.5s infinite;
 }
+
+.stripe-card-element {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  box-shadow: 0 1px 3px 0 #e6ebf1;
+  transition: box-shadow 150ms ease;
+  height: 40px;
+}
+
+.stripe-card-element.is-invalid {
+  border-color: #dc3545;
+}
+
+.stripe-card-element:focus {
+  box-shadow: 0 1px 3px 0 #cfd7df;
+}

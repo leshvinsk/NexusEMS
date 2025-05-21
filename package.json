@@ -25,6 +25,7 @@
     "@ngrx/entity": "^17.1.1",
     "@ngrx/store": "^17.1.1",
     "@ngrx/store-devtools": "^17.1.1",
+    "@stripe/stripe-js": "^7.3.0",
     "chart.js": "^4.4.5",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",

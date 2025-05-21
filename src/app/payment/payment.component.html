@@ -67,75 +67,20 @@
       </div>
     </div>
 
-    <!-- Card Number -->
-    <div class="form-group card-input">
-      <label for="cardNumber">Card Number</label>
-      <input
-        type="text"
-        id="cardNumber"
-        formControlName="cardNumber"
-        [ngClass]="{'is-invalid': submitted && f['cardNumber'].errors}"
-        (input)="formatCardNumber($event)"
-        (keyup)="formatCardNumber($event)"
-        placeholder="1234 5678 9012 3456"
-        maxlength="19"
-        numbersOnly
-        autocomplete="cc-number">
+    <!-- Stripe Card Element -->
+    <div class="form-group">
+      <label>Card Information</label>
+      <div 
+        #cardElement
+        class="stripe-card-element"
+        [ngClass]="{'is-invalid': cardError}">
+      </div>
       <div class="card-icons">
         <img src="assets/images/visa.svg" alt="Visa" onerror="this.src='https://www.visa.com.my/dam/VCOM/regional/ve/romania/blogs/hero-image/visa-logo-800x450.jpg'" />
         <img src="assets/images/mastercard.svg" alt="Mastercard" onerror="this.src='https://elixirbrandcomm.com/Unbox/2019/March/images/mastercard.png'" />
       </div>
-      <div class="error-container" *ngIf="submitted && f['cardNumber'].errors">
-        <div *ngFor="let validation of validationMessages.cardNumber">
-          <div class="error-message" *ngIf="f['cardNumber'].hasError(validation.type)">
-            {{ validation.message }}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-row">
-      <!-- Expiry Date -->
-      <div class="form-group">
-        <label for="expiryDate">Expiry Date</label>
-        <input
-          type="text"
-          id="expiryDate"
-          formControlName="expiryDate"
-          [ngClass]="{'is-invalid': submitted && f['expiryDate'].errors}"
-          (input)="formatExpiryDate($event)"
-          (keyup)="formatExpiryDate($event)"
-          placeholder="MM/YY"
-          maxlength="5"
-          numbersOnly
-          autocomplete="cc-exp">
-        <div class="error-container" *ngIf="submitted && f['expiryDate'].errors">
-          <div *ngFor="let validation of validationMessages.expiryDate">
-            <div class="error-message" *ngIf="f['expiryDate'].hasError(validation.type)">
-              {{ validation.message }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CVV -->
-      <div class="form-group">
-        <label for="cvv">CVV</label>
-        <input
-          type="password"
-          id="cvv"
-          formControlName="cvv"
-          [ngClass]="{'is-invalid': submitted && f['cvv'].errors}"
-          maxlength="4"
-          numbersOnly
-          autocomplete="cc-csc">
-        <div class="error-container" *ngIf="submitted && f['cvv'].errors">
-          <div *ngFor="let validation of validationMessages.cvv">
-            <div class="error-message" *ngIf="f['cvv'].hasError(validation.type)">
-              {{ validation.message }}
-            </div>
-          </div>
-        </div>
+      <div class="error-container" *ngIf="cardError">
+        <div class="error-message">{{ cardError }}</div>
       </div>
     </div>
 
@@ -156,7 +101,8 @@
 
     <!-- Test Card Notice -->
     <div class="test-card-notice">
-      <p><i class="fa fa-info-circle"></i> <strong>For testing:</strong> Use card number "4111 1111 1111 0000" to simulate a payment failure.</p>
+      <p><i class="fa fa-info-circle"></i> <strong>For testing:</strong> Use email containing "fail" to simulate a payment failure.</p>
+      <p><i class="fa fa-credit-card"></i> <strong>Test card:</strong> 4242 4242 4242 4242 (any future date, any CVV)</p>
     </div>
   </form>
 </div>  
