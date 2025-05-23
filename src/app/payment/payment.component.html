@@ -1,108 +1,189 @@
 <div class="payment-container">
   <div class="brand-header">
+    <button type="button" class="back-button" (click)="goBack()">
+      <i class="fa fa-arrow-left"></i> Back
+    </button>
     <img src="assets/favicon/favicon.svg" alt="Brand Logo" class="brand-logo" />
     <h2>Complete Your Payment</h2>
   </div>
 
-  <div class="booking-summary" *ngIf="bookingData">
-    <h3>Booking Summary</h3>
-    <div class="summary-details">
-      <div class="summary-row">
-        <span>Event:</span>
-        <span>{{ bookingData.event_name }}</span>
-      </div>
-      <div class="summary-row">
-        <span>Seats:</span>
-        <span>{{ bookingData.seats?.length || 0 }} seat(s)</span>
-      </div>
-      <div class="summary-row" *ngIf="bookingData.subtotal">
-        <span>Subtotal:</span>
-        <span>${{ bookingData.subtotal.toFixed(2) }}</span>
-      </div>
-      <div class="summary-row" *ngIf="bookingData.discount && bookingData.discount > 0">
-        <span>Discount:</span>
-        <span>-${{ bookingData.discount.toFixed(2) }}</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="amount-display">
-    <span>Total Amount: <strong>${{ bookingData?.total?.toFixed(2) || '0.00' }}</strong></span>
-  </div>
-
-  <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()" novalidate>
-    <!-- Full Name -->
-    <div class="form-group">
-      <label for="fullName">Full Name</label>
-      <input
-        type="text"
-        id="fullName"
-        formControlName="fullName"
-        [ngClass]="{'is-invalid': submitted && f['fullName'].errors}"
-        autocomplete="name">
-      <div class="error-container" *ngIf="submitted && f['fullName'].errors">
-        <div *ngFor="let validation of validationMessages.fullName">
-          <div class="error-message" *ngIf="f['fullName'].hasError(validation.type)">
-            {{ validation.message }}
+  <div class="payment-layout">
+    <!-- Left side: Booking details -->
+    <div class="payment-details">
+      <div class="booking-summary" *ngIf="bookingData">
+        <h3>Booking Summary</h3>
+        <div class="summary-details">
+          <div class="summary-row">
+            <span>Event:</span>
+            <span>{{ bookingData.event_name }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Seats:</span>
+            <span>{{ bookingData.seats?.length || 0 }} seat(s)</span>
+          </div>
+          <div class="summary-row" *ngIf="bookingData.subtotal">
+            <span>Subtotal:</span>
+            <span>${{ bookingData.subtotal.toFixed(2) }}</span>
+          </div>
+          <div class="summary-row" *ngIf="bookingData.discount && bookingData.discount > 0">
+            <span>Discount:</span>
+            <span>-${{ bookingData.discount.toFixed(2) }}</span>
           </div>
         </div>
       </div>
+
+      <div class="amount-display">
+        <span>Total Amount: <strong>${{ bookingData?.total?.toFixed(2) || '0.00' }}</strong></span>
+      </div>
+
+      <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()" novalidate>
+        <!-- Customer Information -->
+        <div class="form-section">
+          <h3>Attendee Information</h3>
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input
+              type="text"
+              id="fullName"
+              formControlName="fullName"
+              [ngClass]="{'is-invalid': submitted && f['fullName'].errors}"
+              autocomplete="name">
+            <div class="error-container" *ngIf="submitted && f['fullName'].errors">
+              <div *ngFor="let validation of validationMessages.fullName">
+                <div class="error-message" *ngIf="f['fullName'].hasError(validation.type)">
+                  {{ validation.message }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              [ngClass]="{'is-invalid': submitted && f['email'].errors}"
+              autocomplete="email">
+            <div class="error-container" *ngIf="submitted && f['email'].errors">
+              <div *ngFor="let validation of validationMessages.email">
+                <div class="error-message" *ngIf="f['email'].hasError(validation.type)">
+                  {{ validation.message }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
 
-    <!-- Email -->
-    <div class="form-group">
-      <label for="email">Email Address</label>
-      <input
-        type="email"
-        id="email"
-        formControlName="email"
-        [ngClass]="{'is-invalid': submitted && f['email'].errors}"
-        autocomplete="email">
-      <div class="error-container" *ngIf="submitted && f['email'].errors">
-        <div *ngFor="let validation of validationMessages.email">
-          <div class="error-message" *ngIf="f['email'].hasError(validation.type)">
-            {{ validation.message }}
+    <!-- Right side: Payment methods -->
+    <div class="payment-methods">
+      <h3>Payment method</h3>
+      
+      <!-- Payment method selection -->
+      <div class="payment-method-selector">
+        <div class="payment-group">
+          <h4>Credit/Debit Cards</h4>
+          <div class="payment-options">
+            <div class="payment-option" (click)="selectPaymentMethod('card')">
+              <input type="radio" id="card" name="paymentMethod" [checked]="selectedPaymentMethod === 'card'">
+              <label for="card">
+                <div class="card-icons">
+                  <img src="assets/payment/visa.svg" alt="Visa" class="payment-logo">
+                  <img src="assets/payment/mastercard.svg" alt="Mastercard" class="payment-logo">
+                  <img src="assets/payment/unionpay.svg" alt="UnionPay" class="payment-logo">
+                </div>
+              </label>
+            </div>
+            
+            <!-- Stripe Card Element (shows when card is selected) -->
+            <div class="card-details" *ngIf="selectedPaymentMethod === 'card'">
+              <div #cardElement class="stripe-card-element" [ngClass]="{'is-invalid': cardError}"></div>
+              <div class="error-container" *ngIf="cardError">
+                <div class="error-message">{{ cardError }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="payment-group">
+          <h4>E-Wallets</h4>
+          <div class="payment-options">
+            <div class="payment-option" (click)="selectPaymentMethod('apple_pay')">
+              <input type="radio" id="apple_pay" name="paymentMethod" [checked]="selectedPaymentMethod === 'apple_pay'" style="margin-right: 7px;">
+              <label for="apple_pay">
+                <img src="assets/payment/apple-pay.svg" alt="Apple Pay" class="payment-logo">
+                <span>Apple Pay</span>
+              </label>
+            </div>
+            
+            <div class="payment-option" (click)="selectPaymentMethod('google_pay')">
+              <input type="radio" id="google_pay" name="paymentMethod" [checked]="selectedPaymentMethod === 'google_pay'">
+              <label for="google_pay">
+                <img src="assets/payment/google-pay.svg" alt="Google Pay" class="payment-logo">
+                <span>Google Pay</span>
+              </label>
+            </div>
+            
+            <div class="payment-option" (click)="selectPaymentMethod('grabpay')">
+              <input type="radio" id="grabpay" name="paymentMethod" [checked]="selectedPaymentMethod === 'grabpay'" style="margin-right: 0px;">
+              <label for="grabpay">
+                <img src="assets/payment/grabpay.svg" alt="GrabPay" class="payment-logo" style="margin-right: 5px;">
+                <span>GrabPay</span>
+              </label>
+            </div>
+            
+            <div class="payment-option" (click)="selectPaymentMethod('tng')">
+              <input type="radio" id="tng" name="paymentMethod" [checked]="selectedPaymentMethod === 'tng'">
+              <label for="tng">
+                <img src="assets/payment/touch-n-go.svg" alt="Touch'n Go E-Wallet" class="payment-logo">
+                <span>Touch'n Go E-Wallet</span>
+              </label>
+            </div>
+            
+            <div class="payment-option" (click)="selectPaymentMethod('alipay')">
+              <input type="radio" id="alipay" name="paymentMethod" [checked]="selectedPaymentMethod === 'alipay'">
+              <label for="alipay">
+                <img src="assets/payment/alipay.svg" alt="Alipay" class="payment-logo">
+                <span>Alipay</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="payment-group">
+          <h4>Bank Transfer</h4>
+          <div class="payment-options">
+            <div class="payment-option" (click)="selectPaymentMethod('fpx')">
+              <input type="radio" id="fpx" name="paymentMethod" [checked]="selectedPaymentMethod === 'fpx'">
+              <label for="fpx">
+                <img src="assets/payment/fpx.svg" alt="FPX" class="payment-logo">
+                <span>FPX</span>
+              </label>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Stripe Card Element -->
-    <div class="form-group">
-      <label>Card Information</label>
-      <div 
-        #cardElement
-        class="stripe-card-element"
-        [ngClass]="{'is-invalid': cardError}">
+      <!-- Payment button -->
+      <button type="button" (click)="onSubmit()" [disabled]="processing || !selectedPaymentMethod">
+        <span *ngIf="!processing">Pay</span>
+        <span *ngIf="processing" class="spinner">
+          <i class="fa fa-spinner fa-spin"></i> Processing...
+        </span>
+      </button>
+
+      <!-- Secure Payment Notice -->
+      <div class="secure-payment">
+        <i class="fa fa-lock"></i> Your payment information is secure and encrypted
       </div>
-      <div class="card-icons">
-        <img src="assets/images/visa.svg" alt="Visa" onerror="this.src='https://www.visa.com.my/dam/VCOM/regional/ve/romania/blogs/hero-image/visa-logo-800x450.jpg'" />
-        <img src="assets/images/mastercard.svg" alt="Mastercard" onerror="this.src='https://elixirbrandcomm.com/Unbox/2019/March/images/mastercard.png'" />
+
+      <!-- Test Card Notice -->
+      <div class="test-card-notice" *ngIf="selectedPaymentMethod === 'card'">
+        <p><i class="fa fa-info-circle"></i> <strong>For testing:</strong> Use email containing "fail" to simulate a payment failure.</p>
+        <p><i class="fa fa-credit-card"></i> <strong>Test card:</strong> 4242 4242 4242 4242 (any future date, any CVV)</p>
       </div>
-      <div class="error-container" *ngIf="cardError">
-        <div class="error-message">{{ cardError }}</div>
-      </div>
     </div>
-
-    <!-- Submit Button -->
-    <button
-      type="submit"
-      [disabled]="processing">
-      <span *ngIf="!processing">Complete Payment</span>
-      <span *ngIf="processing" class="spinner">
-        <i class="fa fa-spinner fa-spin"></i> Processing...
-      </span>
-    </button>
-
-    <!-- Secure Payment Notice -->
-    <div class="secure-payment">
-      <i class="fa fa-lock"></i> Your payment information is secure and encrypted
-    </div>
-
-    <!-- Test Card Notice -->
-    <div class="test-card-notice">
-      <p><i class="fa fa-info-circle"></i> <strong>For testing:</strong> Use email containing "fail" to simulate a payment failure.</p>
-      <p><i class="fa fa-credit-card"></i> <strong>Test card:</strong> 4242 4242 4242 4242 (any future date, any CVV)</p>
-    </div>
-  </form>
+  </div>
 </div>  

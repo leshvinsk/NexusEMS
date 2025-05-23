@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -15,6 +16,9 @@ export class PaymentComponent implements OnInit, OnDestroy {
   paymentForm!: FormGroup;
   submitted = false;
   processing = false;
+  
+  // Payment method selection
+  selectedPaymentMethod: string = 'card';
   
   // Booking data
   bookingId: string = '';
@@ -51,7 +55,8 @@ export class PaymentComponent implements OnInit, OnDestroy {
     private router: Router, 
     private route: ActivatedRoute,
     private formBuilder: FormBuilder,
-    private http: HttpClient
+    private http: HttpClient,
+    private location: Location
   ) {
     this.createForm();
   }
@@ -148,6 +153,21 @@ export class PaymentComponent implements OnInit, OnDestroy {
     });
   }
   
+  // Select payment method
+  selectPaymentMethod(method: string): void {
+    this.selectedPaymentMethod = method;
+    console.log('Selected payment method:', method);
+    
+    // If card is selected, ensure the Stripe element is properly mounted
+    if (method === 'card') {
+      setTimeout(() => {
+        if (this.card && this.cardElement && this.cardElement.nativeElement) {
+          this.card.mount(this.cardElement.nativeElement);
+        }
+      }, 100);
+    }
+  }
+  
   // Load booking data from the server
   loadBookingData(): void {
     this.http.get(`${this.API_URL}/bookings/${this.bookingId}`).subscribe({
@@ -201,17 +221,41 @@ export class PaymentComponent implements OnInit, OnDestroy {
       }).subscribe({
         next: (response: any) => {
           console.log('Customer information updated:', response);
-          this.createPaymentIntent();
+          this.processPayment();
         },
         error: (error) => {
           console.error('Error updating customer information:', error);
           // Continue with payment processing anyway
-          this.createPaymentIntent();
+          this.processPayment();
         }
       });
     } else {
       // No booking ID, just process payment
-      this.createPaymentIntent();
+      this.processPayment();
+    }
+  }
+  
+  // Process payment based on selected method
+  processPayment(): void {
+    switch (this.selectedPaymentMethod) {
+      case 'card':
+        this.createPaymentIntent();
+        break;
+      case 'apple_pay':
+      case 'google_pay':
+      case 'grabpay':
+      case 'tng':
+      case 'alipay':
+      case 'fpx':
+        // For demo purposes, simulate a successful payment
+        console.log(`Processing ${this.selectedPaymentMethod} payment...`);
+        setTimeout(() => {
+          this.handlePaymentSuccess(`demo_${this.selectedPaymentMethod}_${Date.now()}`);
+        }, 2000);
+        break;
+      default:
+        this.handlePaymentError('Please select a valid payment method');
+        break;
     }
   }
   
@@ -294,7 +338,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
     // Update booking with payment information
     if (this.bookingId) {
       this.http.put(`${this.API_URL}/bookings/${this.bookingId}/payment`, {
-        payment_method: 'Stripe',
+        payment_method: this.selectedPaymentMethod,
         payment_id: paymentId
       }).subscribe({
         next: (response: any) => {
@@ -351,5 +395,21 @@ export class PaymentComponent implements OnInit, OnDestroy {
         );
       }
     }
+  }
+
+  // Go back to previous page and clear selected seats
+  goBack(): void {
+    // Clear selected seats from localStorage
+    if (localStorage.getItem('selectedSeats')) {
+      localStorage.removeItem('selectedSeats');
+    }
+    
+    // Clear temporary booking data
+    if (localStorage.getItem('tempBooking')) {
+      localStorage.removeItem('tempBooking');
+    }
+    
+    // Navigate back to previous page
+    this.location.back();
   }
 }
